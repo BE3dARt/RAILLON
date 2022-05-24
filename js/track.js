@@ -1,17 +1,52 @@
-class coordinates {
-  constructor(x, y, z) {
-    this.x = x;
-    this.y = y;
-	this.z = z;
-  }
+function radian (deg) {
+	return deg * (Math.PI/180);
+}
+
+function degrees (rad) {
+	return rad * (180/Math.PI);
+}
+
+function angleTo2DVector (angle, precision) {
+	if (angle >= 0 && angle < 90) {
+		return [Math.round(Math.sin(radian(90 - angle)) * Math.pow(10, precision)) / Math.pow(10, precision), Math.round(Math.cos(radian(90 - angle)) * Math.pow(10, precision)) / Math.pow(10, precision)]
+	} else if ((angle >= 90 && angle < 180)) {
+		return [Math.round(Math.sin(radian(angle - 90)) * Math.pow(10, precision) * -1) / Math.pow(10, precision), Math.round(Math.cos(radian(angle - 90)) * Math.pow(10, precision)) / Math.pow(10, precision)]
+	} else if ((angle >= 180 && angle < 270)) {
+		return [Math.round(Math.sin(radian(270 - angle)) * Math.pow(10, precision) * -1) / Math.pow(10, precision), Math.round(Math.cos(radian(270 - angle)) * Math.pow(10, precision) * -1) / Math.pow(10, precision)]
+	} else {
+		return [Math.round(Math.sin(radian(angle - 270)) * Math.pow(10, precision)) / Math.pow(10, precision), Math.round(Math.cos(radian(angle - 270)) * Math.pow(10, precision) * -1) / Math.pow(10, precision)]
+	}
+}
+
+console.log(angleTo2DVector(260, 5))
+
+class railSegmentJoint {
+	constructor(x, y, direction) {
+		this.x = x;
+		this.y = y;
+		this.dir = direction;
+	}
 }
 
 class railSegment {
-  constructor(start, end) {
-    this.height = start;
-    this.width = end;
-	this.test = new coordinates(10, 10, 10);
-  }
+	constructor(start, end, scene) {
+		this.start = start;
+		this.end = end;
+		this.Object = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+	}
+	
+	move() {
+		this.Object.position.x += 1;
+	}
+}
+
+class wagon {
+	
+}
+
+// A train consists of a couple of wagons
+class train {
+	
 }
 
 var canvas = document.getElementById("renderCanvas");
@@ -54,15 +89,16 @@ var createScene = function () {
 	// Set a direction flag for the animation
 	var direction = true;
 	
-	const square = new railSegment(10, 10);
-	console.log(square.test);
+	square = new railSegment(new railSegmentJoint(0, 0, 0), new railSegmentJoint(2, 2, 1));
+	square.move();
+	console.log(square.end.dir)
 
 	// Code in this function will run ~60 times per second
 	scene.registerBeforeRender(function () {
 		// Check if box is moving right
 		if (box.position.x < 2 && direction) {
 			// Increment box position to the right
-			box.position.x += 0.05;
+			box.position.x += 0.00;
 		}
 		else {
 			// Swap directions to move left
@@ -72,7 +108,7 @@ var createScene = function () {
 		// Check if box is moving left
 		if (box.position.x > -2 && !direction) {
 			// Decrement box position to the left
-			box.position.x -= 0.05;
+			box.position.x -= 0.00;
 		}
 		else {
 			// Swap directions to move right
