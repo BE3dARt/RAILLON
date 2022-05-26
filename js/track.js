@@ -18,45 +18,49 @@ function angleTo2DVector (angle, precision) {
 	}
 }
 
-//console.log(angleTo2DVector(260, 5))
-
-class railSegmentJoint {
-	constructor(x, y, direction) {
-		this.x = x;
-		this.y = y;
-		this.dir = direction;
-	}
-}
-
 class railSegment {
 	constructor(startJoint, endJoint) {
         
-        this.modifier = 1;
-        
-        endJoint[2] = endJoint[2] + 180//Create opposite angle (Implement if over 360)
+		//Adjust how wide the cureves will be
+        this.curveModifier = 1;
+		
+		//Mirror end angle of end joint and adjust for 360°
+        endJoint[2] = endJoint[2] + 180
         if (endJoint[2] >= 360) {endJoint[2] -= 360}
         
-        this.point1 = new BABYLON.Vector3(startJoint[0], startJoint[1], 0);
-        this.point1Extension = new BABYLON.Vector3(startJoint[0] + (angleTo2DVector(startJoint[2], 5)[0] * Math.abs(startJoint[0]-endJoint[0]) * this.modifier), startJoint[1] + (angleTo2DVector(startJoint[2], 5)[1] * Math.abs(startJoint[1]-endJoint[1]) * this.modifier), 0);
-        this.point2 = new BABYLON.Vector3(endJoint[0], endJoint[1], 0);
-        this.point2Extension = new BABYLON.Vector3(endJoint[0] + (angleTo2DVector(endJoint[2], 5)[0] * Math.abs(startJoint[0]-endJoint[0]) * this.modifier),endJoint[1] + (angleTo2DVector(endJoint[2], 5)[1] * Math.abs(startJoint[1]-endJoint[1]) * this.modifier), 0);
-        
-        this.number = 30;
-        
-        console.log(this.point2Extension)
-        
-        this.curvature = BABYLON.Curve3.CreateHermiteSpline(this.point1, this.point1Extension, this.point2, this.point2Extension, this.number);
+		//Build curve
+        this.curveStart = new BABYLON.Vector3(startJoint[0], startJoint[1], 0);
+        this.curveStartControl = new BABYLON.Vector3(startJoint[0] + (angleTo2DVector(startJoint[2], 5)[0] * this.curveModifier), startJoint[1] + (angleTo2DVector(startJoint[2], 5)[1] * this.curveModifier), 0);
+        this.curveEnd = new BABYLON.Vector3(endJoint[0], endJoint[1], 0);
+        this.curveEndControl = new BABYLON.Vector3(endJoint[0] + (angleTo2DVector(endJoint[2], 5)[0] * this.curveModifier),endJoint[1] + (angleTo2DVector(endJoint[2], 5)[1] * this.curveModifier), 0);
+		
+		//Calculate how many points are needed (Dependent on length)
+		this.curvePointTestNumber = 20;
+        this.curvature = BABYLON.Curve3.CreateCubicBezier(this.curveStart, this.curveStartControl, this.curveEndControl, this.curveEnd, this.curvePointTestNumber);
+		this.curvePointNumber = Math.round(this.curvature.length() * 10);
+		
+		//Execute curve
+		this.curvature = BABYLON.Curve3.CreateCubicBezier(this.curveStart, this.curveStartControl, this.curveEndControl, this.curveEnd, this.curvePointNumber);
+		
+		//Display curve in 3D
         BABYLON.Mesh.CreateLines("hermite", this.curvature.getPoints(), scene);
         
-        this.ObjectOne = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
-        this.ObjectOne.position = this.point1Extension;
-        this.ObjectOne.scaling.x = 0.1;
-        this.ObjectOne.scaling.y = 0.1;
-        
-        this.ObjectTwo = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
-        this.ObjectTwo.position = this.point2Extension;
-        this.ObjectTwo.scaling.x = 0.1;
-        this.ObjectTwo.scaling.y = 0.1;
+		//3D Boxes to debug curve
+		this.activeDebug = false;
+		if (this.activeDebug == true) {
+			this.Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+			this.Debug.position = this.curveStartControl;
+			this.Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+			this.Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+			this.Debug.position = this.curveEndControl;
+			this.Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+			this.Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+			this.Debug.position = this.curveStart;
+			this.Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+			this.Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+			this.Debug.position = this.curveEnd;
+			this.Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+		}
 	}
 	
 	move() {
@@ -115,8 +119,11 @@ var createScene = function () {
 	// Set a direction flag for the animation
 	var direction = true;
 	
-	//square = new railSegment(new railSegmentJoint(0, 0, 0), new railSegmentJoint(1, 1, 90));
-    square = new railSegment([0, 0, 0], [-2, 1, 0]);
+    square = new railSegment([0, 0, 0], [2, 1, 45]);
+	square2 = new railSegment([2, 1, 45], [3, 0, 180]);
+	square3 = new railSegment([3, 0, 180], [2, -1, 270]);
+	square4 = new railSegment([2, -1, 270], [0, 0, 0]);
+	
 	//square.move();
 	//console.log(square.end.dir)
 
