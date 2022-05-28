@@ -79,7 +79,9 @@ var createScene = function () {
 	
 	myloco = new locomotive([["Test", 0], ["Test", 0.5], ["Test", 1]], 0.02, [layout1, 0, 2], true);
 	
-	//BABYLON.SceneLoader.Append("assets/obj/", "EMD_SD60_TestExport.obj", scene, function (scene) {});
+	//BABYLON.SceneLoader.Append("https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/obj/", "EMD_SD60_TestExport.obj", scene, function (scene) {});
+	
+	BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/obj/", "EMD_SD60_TestExport.obj", scene);
 	
 	// Code in this function will run ~60 times per second
 	scene.registerBeforeRender(function () {
