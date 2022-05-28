@@ -81,7 +81,7 @@ var createScene = function () {
 	
 	//BABYLON.SceneLoader.Append("https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/obj/", "EMD_SD60_TestExport.obj", scene, function (scene) {});
 	
-	BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/obj/", "EMD_SD60_TestExport3.obj", scene);
+	BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/obj/", "EMD_SD60_TestExport4.obj", scene);
 	
 	// Code in this function will run ~60 times per second
 	scene.registerBeforeRender(function () {
