@@ -146,10 +146,10 @@ class locomotive {
 		this.mesh;
 		
 		// Asynchronous asset loading function. We have to wait for it to finish before we can do stuff with it.
-		const resultPromise = BABYLON.SceneLoader.ImportMeshAsync("", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/obj/", "Locomotive_USA_tex2.obj", scene);
+		const resultPromise = BABYLON.SceneLoader.ImportMeshAsync("", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/obj/", "Test.gltf", scene);
 		resultPromise.then((result) => {
 			this.mesh = result.meshes[1];
-			this.mesh.position.x = 2;
+			this.mesh.position.x = -2;
 		})
 		
 		//Bogie setup
