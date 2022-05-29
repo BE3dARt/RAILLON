@@ -4,9 +4,6 @@ class railSegment {
         this.curveModifier = 1; // Adjust how wide the cureves will be
 		this.curveSmoothness = 10; // Adjust how smooth the cureves will be (Higher numbers mean more curve points)
 		
-		// Debug information on/off
-		this.activeDebug = false;
-		
 		// Mirror angle of end joint and adjust for 360°
         dirEnd = dirEnd + 180
         if (dirEnd >= 360) {dirEnd -= 360}
@@ -31,7 +28,7 @@ class railSegment {
 		BABYLON.Mesh.CreateLines("hermite", this.buildTrack(this.curvature.getPoints(), 1.435, false), scene);
 		
 		// 3D Boxes to debug curve
-		if (this.activeDebug == true) {
+		if (activeDebug == true) {
 			this.Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
 			this.Debug.position = this.curveStartControl;
 			this.Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
@@ -50,7 +47,7 @@ class railSegment {
 	// Return spline which is trackGauge apart from the main spline. Used to create the tracks
 	buildTrack(original, trackGauge, reverse) {
 		
-		trackGauge = trackGauge / 19.65; // Don't know; checks out with standard-gauge devided by 10 :D
+		trackGauge = trackGauge / 19.65; // Don't know; checks out standard-gauge devided by 10 :D
 		
 		var path3d = new BABYLON.Path3D(original);
 		var curve = path3d.getCurve();
@@ -67,7 +64,7 @@ class railSegment {
 			}
 			
 			// Show debug information
-			if (this.activeDebug == true) { 
+			if (activeDebug == true) { 
 				var bi = BABYLON.Mesh.CreateLines('bi', [ curve[p], curve[p].add(track[p]) ], scene);
 				bi.color = BABYLON.Color3.Green();
 			}
@@ -138,38 +135,45 @@ class bogie {
 // A locomotive consists of at least two bogies
 class locomotive {
 	
-	//bogie: [[type, distance to first]]
 	// position: [track, trackIndex, subTrackIndex]
-	constructor(bogies, speed, position, moveDir, scene) {
+	constructor(meshName, speed, position, moveDir, heading, scene) {
 		this.speed = speed;
 		this.position = position;
 		this.moveDir = moveDir;
+		this.heading = heading;
 		this.initialized = false;
-		this.mesh;
+		
+		this.mesh; // Will hold the hull mesh
+		
 		
 		// Asynchronous asset loading function. We have to wait for it to finish before we can do stuff with it.
-		const resultPromise = BABYLON.SceneLoader.ImportMeshAsync("", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/glb/", "Locomotive_USA_rotated.glb", scene);
+		const resultPromise = BABYLON.SceneLoader.ImportMeshAsync("", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/glb/", meshName + ".glb", scene);
 		resultPromise.then((load3D) => {
 			
 			// Retrieve mesh for train hull
 			this.mesh = load3D.meshes[1];
 			
+			// Retrieve position of first bogie now before it is being moved when initializing
+			var posFirstBogieIn3DEditor = load3D.meshes[2].position;
+			
 			//Formalities
 			this.mesh.rotationQuaternion = null;
 			this.mesh.rotation = BABYLON.Vector3.Zero();
 			
-			//Make sure that provided bogie count does match the 3D scene bogie count
-			if (bogies.length != load3D.meshes.length - 2) {
-				throw 'Provided number of bogies does not match the imported 3D model bogie count';
-			}
-			
 			// Bogie setup
-			this.bogies = [new bogie(this.position[0].layout[position[1]].curvature.getPoints()[position[2]], position[0], position[1], position[2], moveDir, load3D.meshes[2])];
+			this.bogies = [new bogie(this.position[0].layout[position[1]].curvature.getPoints()[position[2]], position[0], position[1], position[2], moveDir, load3D.meshes[2])]; // Initialize first bogie
 			
-			// Initialize every other bogie
-			for (let i = 1; i < bogies.length; i++) {
-				var result = this.bogieIndex(bogies[i][1]);
-				this.bogies.push(new bogie(result[0], position[0], result[1], result[2], moveDir, load3D.meshes[i + 2]));
+			// Initialize every other bogie (Start with 3 because 0th is 'root', 1st 'hull' and 2nd 'bogie 1')
+			for (let i = 3; i < load3D.meshes.length; i++) {
+				
+				// Firstly we need to calculate the distance to the first bogie.
+				var distanceVec = BABYLON.Vector3.Distance(posFirstBogieIn3DEditor, load3D.meshes[i].position);
+				
+				// Plug it into the function which will determine the bogie's position along the track.
+				var result = this.bogieIndex(distanceVec);
+				
+				// Initialize every other bogie
+				this.bogies.push(new bogie(result[0], position[0], result[1], result[2], moveDir, load3D.meshes[i]));
 			}
 			
 			// Green light to all other functions
@@ -177,7 +181,7 @@ class locomotive {
 		})
 	}
 	
-	// Given the distance apart from the first bogie, calcaulte the position of the next one.
+	// Given the distance apart from the first bogie, calculate the position of the next one.
 	bogieIndex(range) {
 		
 		var subTrackIndex = this.position[2];
@@ -197,7 +201,6 @@ class locomotive {
 				var testus = intersection(posFirstBogie, posSecondBogie, posSecondBogiePrevious, range);
 				
 				return [testus, trackIndex, subTrackIndex-1];
-				
 			}
 			
 			//Verify if index is still correct
@@ -229,8 +232,14 @@ class locomotive {
 		// Rotate mesh (Only on x-z plane at the moment)
 		var angle = BABYLON.Angle.BetweenTwoPoints(new BABYLON.Vector2(posFirstBogie.x, posFirstBogie.z), new BABYLON.Vector2(posLastBogie.x, posLastBogie.z));
 		
-		// Set ptRes to be the new position
-		this.mesh.rotation.y = (angle.radians() *-1) + (Math.PI * (3/2));
+		// Set direction (Currently only turns around hull; meaning bogies cannot be different)
+		if (this.heading == true) {
+			this.mesh.rotation.y = (angle.radians() *-1) + (Math.PI * (3/2));
+		} else {
+			this.mesh.rotation.y = (angle.radians() *-1) + (Math.PI * (5/2));
+		}
+		
+		// Set new position
 		this.mesh.position = ptRes;
 	}
 }

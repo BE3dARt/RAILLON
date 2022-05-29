@@ -36,10 +36,24 @@
                 height: 100%;
                 touch-action: none;
             }
+			 #fps {
+                position: absolute;
+                background-color: black;
+                border: 2px solid red;
+                text-align: center;
+                font-size: 16px;
+                color: white;
+                top: 15px;
+                right: 10px;
+                width: 60px;
+                height: 20px;
+            }
         </style>
     </head>
 <body>
+	<div id="fps">0</div>
     <canvas id="renderCanvas"></canvas>
+	<script src="js/configuration.js"></script>
 	<script src="js/functions.js"></script>
 	<script src="js/classes.js"></script>
 	<script src="js/game.js"></script>

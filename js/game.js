@@ -20,7 +20,8 @@ var createScene = function () {
 	// This creates and positions a free camera (non-mesh)
 	var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, new BABYLON.Vector3(0, 4, -5), scene);
 	
-	scene.useRightHandedSystem=true;
+	//Use the right hand system because Cinema 4D apparently can't flip x axis for .glb exports.
+	scene.useRightHandedSystem = true;
 	
 	//Camera properties
 	camera.allowUpsideDown = false;
@@ -34,22 +35,25 @@ var createScene = function () {
 	// Default intensity is 1. Let's dim the light a small amount
 	light.intensity = 1;
 	
-	gauge = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
-	gauge.scaling = new BABYLON.Vector3(0.1435, 0.1435, 0.1435);
-	
 	// Materials
     var mat1 = new BABYLON.StandardMaterial('mat1', scene);
     mat1.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.3);
 	
-	//Ground
+	// Display Ground
 	map = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
 	map.scaling = new BABYLON.Vector3(20, 0.1, 10);
 	map.position = new BABYLON.Vector3(0, -0.08, 0);
 	map.material = mat1;
 	
-	//Display axis
-	const axes = new BABYLON.AxesViewer(scene, 1)
+	// Display axis
+	if (activeDebug == true) {
+		const axes = new BABYLON.AxesViewer(scene, 1);
+	}
 	
+	// Initialzise FPS display
+	let divFps = document.getElementById("fps");
+	
+	// Track layout
 	layout1Segments  = [
 		new railSegment([-7.5, 0, -4.5], 180, [-9, 0, -3], 90),
 		new railSegment([-9, 0, -3], 90, [-9, 0, -1], 90),
@@ -76,23 +80,24 @@ var createScene = function () {
 		new railSegment([8.5, 0, -2.5], 270, [7, 0, -4.5], 180),
 		new railSegment([7, 0, -4.5], 180, [-7.5, 0, -4.5], 180),
 	];
-	
-
 	layout1 = new track(layout1Segments);
 	
-	myloco = new locomotive([["Test", 0], ["Test", 0.984]], 0.015, [layout1, 0, 2], true, scene);
-	myloco2 = new locomotive([["Test", 0], ["Test", 0.984]], 0.015, [layout1, 1, 2], true, scene);
+	// Create locomotives
+	myloco = new locomotive("Locomotive_USA_rotated", 0.015, [layout1, 0, 2], true, true, scene);
+	//myloco = new locomotive("Locomotive_USA_rotated", 0.015, [layout1, 1, 2], true, true, scene);
+	//myloco2 = new locomotive("Locomotive_USA_rotated", 0.015, [layout1, 0, 10], true, false, scene);
 	
 	// Code in this function will run ~60 times per second
 	scene.registerBeforeRender(function () {
 		
 		myloco.move()
-		myloco2.move()
+		
+		// Display FPS
+		divFps.innerHTML = engine.getFps().toFixed() + " fps";
 		
 	});
 
 	return scene;
-
 };
 
 window.initFunction = async function() {
