@@ -78,7 +78,7 @@ var createScene = function () {
 
 	layout1 = new track(layout1Segments);	
 	
-	myloco = new locomotive([["Test", 0], ["Test", 0.5], ["Test", 1]], 0.02, [layout1, 0, 2], true, scene);
+	myloco = new locomotive([["Test", 0], ["Test", 0.5]], 0.02, [layout1, 0, 2], true, scene);
 	
 	/*
 	var assetsManager = new BABYLON.AssetsManager(scene);

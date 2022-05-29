@@ -80,16 +80,16 @@ class railSegment {
 
 class bogie {
 	
-	constructor(position, track, trackIndex, subTrackIndex, moveDir) {
+	constructor(position, track, trackIndex, subTrackIndex, moveDir, mesh) {
 		
 		this.track = track;
 		this.trackIndex = trackIndex;
 		this.moveDir = moveDir;
 		
 		// Mesh
-		this.mesh = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+		this.mesh = mesh;
 		this.mesh.position = position
-		this.mesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+		//this.mesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
 		
 		// Currently there are two problems when starting the process:
 		// - If 0 and reverese, it will throw error because index out of bounds
@@ -147,19 +147,28 @@ class locomotive {
 		
 		// Asynchronous asset loading function. We have to wait for it to finish before we can do stuff with it.
 		const resultPromise = BABYLON.SceneLoader.ImportMeshAsync("", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/glb/", "Locomotive_USA.glb", scene);
-		resultPromise.then((result) => {
-			this.mesh = result.meshes[0];
-			this.mesh.position.x = 2;
-			this.mesh.position.z = 2;
-		})
-		
-		//Bogie setup
-		this.bogies = [new bogie(this.position[0].layout[position[1]].curvature.getPoints()[position[2]], position[0], position[1], position[2], moveDir)];
-		for (let i = 1; i < bogies.length; i++) {
-			var result = this.bogieIndex(bogies[i][1]);
+		resultPromise.then((load3D) => {
 			
-			this.bogies.push(new bogie(result[0], position[0], result[1], result[2], moveDir))
-		}
+			// Retrieve mesh for train hull
+			this.mesh = load3D.meshes[1];
+			
+			//Make sure that provided bogie count does match the 3D scene bogie count
+			if (bogies.length != load3D.meshes.length - 2) {
+				throw 'Provided number of bogies does not match the imported 3D model bogie count';
+			}
+			
+			// Bogie setup
+			this.bogies = [new bogie(this.position[0].layout[position[1]].curvature.getPoints()[position[2]], position[0], position[1], position[2], moveDir, load3D.meshes[2])];
+			
+			// Initialize every other bogie
+			for (let i = 1; i < bogies.length; i++) {
+				var result = this.bogieIndex(bogies[i][1]);
+				this.bogies.push(new bogie(result[0], position[0], result[1], result[2], moveDir, load3D.meshes[i + 2]));
+			}
+			
+			// Green light to all other functions
+			this.initialized = true;
+		})
 	}
 	
 	// Given the distance apart from the first bogie, calcaulte the position of the next one.
@@ -194,9 +203,12 @@ class locomotive {
 	
 	// Move hull and all bogies
 	move() {
+		if (this.initialized == false) {return}
+		
 		for (let i = 0; i < this.bogies.length; i++) {
 			this.bogies[i].move(this.speed);
 		}
+		
 	}
 }
 
