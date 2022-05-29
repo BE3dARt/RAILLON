@@ -147,7 +147,7 @@ class locomotive {
 		this.mesh;
 		
 		// Asynchronous asset loading function. We have to wait for it to finish before we can do stuff with it.
-		const resultPromise = BABYLON.SceneLoader.ImportMeshAsync("", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/glb/", "Locomotive_USA.glb", scene);
+		const resultPromise = BABYLON.SceneLoader.ImportMeshAsync("", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/glb/", "Locomotive_USA_rotated.glb", scene);
 		resultPromise.then((load3D) => {
 			
 			// Retrieve mesh for train hull
