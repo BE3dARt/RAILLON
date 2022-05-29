@@ -89,6 +89,8 @@ class bogie {
 		// Mesh
 		this.mesh = mesh;
 		this.mesh.position = position
+		
+		//Formalities
 		this.mesh.rotationQuaternion = null;
 		this.mesh.rotation = BABYLON.Vector3.Zero();
 		
@@ -118,8 +120,7 @@ class bogie {
 		var angle = BABYLON.Angle.BetweenTwoPoints(new BABYLON.Vector2(this.mesh.position.x, this.mesh.position.z), new BABYLON.Vector2(ptRes.x, ptRes.z));
 		
 		// Set ptRes to be the new position
-		
-		this.mesh.rotation.y = angle.radians() *-1;
+		this.mesh.rotation.y = (angle.radians() *-1) + Math.PI/2;
 		this.mesh.position = ptRes;
 		
 		
@@ -152,6 +153,10 @@ class locomotive {
 			
 			// Retrieve mesh for train hull
 			this.mesh = load3D.meshes[1];
+			
+			//Formalities
+			this.mesh.rotationQuaternion = null;
+			this.mesh.rotation = BABYLON.Vector3.Zero();
 			
 			//Make sure that provided bogie count does match the 3D scene bogie count
 			if (bogies.length != load3D.meshes.length - 2) {
@@ -204,12 +209,29 @@ class locomotive {
 	
 	// Move hull and all bogies
 	move() {
+		
+		// If meshes haven't been loaded
 		if (this.initialized == false) {return}
 		
+		// Move the bogies
 		for (let i = 0; i < this.bogies.length; i++) {
 			this.bogies[i].move(this.speed);
 		}
 		
+		// Move the hull
+		var posFirstBogie = this.bogies[0].mesh.position;
+		var posLastBogie = this.bogies[this.bogies.length-1].mesh.position;
+		
+		// Direction Vector
+		var dirVec = new BABYLON.Vector3((posLastBogie.x - posFirstBogie.x) / 2, (posLastBogie.y - posFirstBogie.y) / 2, (posLastBogie.z - posFirstBogie.z) / 2);
+		var ptRes = new BABYLON.Vector3(posFirstBogie.x + dirVec.x, posFirstBogie.y + dirVec.y, posFirstBogie.z + dirVec.z)
+		
+		// Rotate mesh (Only on x-z plane at the moment)
+		var angle = BABYLON.Angle.BetweenTwoPoints(new BABYLON.Vector2(posFirstBogie.x, posFirstBogie.z), new BABYLON.Vector2(posLastBogie.x, posLastBogie.z));
+		
+		// Set ptRes to be the new position
+		this.mesh.rotation.y = (angle.radians() *-1) + (Math.PI * (3/2));
+		this.mesh.position = ptRes;
 	}
 }
 

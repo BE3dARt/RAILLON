@@ -20,6 +20,8 @@ var createScene = function () {
 	// This creates and positions a free camera (non-mesh)
 	var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, new BABYLON.Vector3(0, 4, -5), scene);
 	
+	scene.useRightHandedSystem=true;
+	
 	//Camera properties
 	camera.allowUpsideDown = false;
 	camera.inertia = 0.3;
@@ -76,37 +78,16 @@ var createScene = function () {
 	];
 	
 
-	layout1 = new track(layout1Segments);	
+	layout1 = new track(layout1Segments);
 	
-	myloco = new locomotive([["Test", 0], ["Test", 0.5]], 0.02, [layout1, 0, 2], true, scene);
-	
-	/*
-	var assetsManager = new BABYLON.AssetsManager(scene);
-	var type1_Hull_Task = assetsManager.addMeshTask("type1_Hull", "", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/obj/", "Locomotive_USA_Hull.obj");
-	var type1_Bogie_Task = assetsManager.addMeshTask("type1_Bogie", "", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/obj/", "Locomotive_USA_Bogie.obj");
-	
-	var test;
-	type1_Hull_Task.onSuccess = function (task) {
-	    test = task.loadedMeshes[4];
-		test.position = new BABYLON.Vector3(0.1435, 0.1435, 0.1435);
-		//task.loadedMeshes[0].scaling = BABYLON.Vector3(2,1,1);
-	}	
-	
-	assetsManager.onFinish = function (tasks) {
-		
-		test.position = new BABYLON.Vector3(1, 1, 1);
-		engine.runRenderLoop(function () {
-			scene.render();
-		});
-	};
-	
-	assetsManager.load();
-	*/
+	myloco = new locomotive([["Test", 0], ["Test", 0.984]], 0.015, [layout1, 0, 2], true, scene);
+	myloco2 = new locomotive([["Test", 0], ["Test", 0.984]], 0.015, [layout1, 1, 2], true, scene);
 	
 	// Code in this function will run ~60 times per second
 	scene.registerBeforeRender(function () {
 		
 		myloco.move()
+		myloco2.move()
 		
 	});
 
