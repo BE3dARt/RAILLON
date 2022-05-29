@@ -89,7 +89,8 @@ class bogie {
 		// Mesh
 		this.mesh = mesh;
 		this.mesh.position = position
-		//this.mesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+		this.mesh.rotationQuaternion = null;
+		this.mesh.rotation = BABYLON.Vector3.Zero();
 		
 		// Currently there are two problems when starting the process:
 		// - If 0 and reverese, it will throw error because index out of bounds
