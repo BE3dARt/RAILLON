@@ -138,12 +138,22 @@ class locomotive {
 	
 	//bogie: [[type, distance to first]]
 	// position: [track, trackIndex, subTrackIndex]
-	constructor(bogies, speed, position, moveDir) {
+	constructor(bogies, speed, position, moveDir, scene) {
 		this.speed = speed;
 		this.position = position;
 		this.moveDir = moveDir;
-		this.bogies = [new bogie(this.position[0].layout[position[1]].curvature.getPoints()[position[2]], position[0], position[1], position[2], moveDir)];
+		this.initialized = false;
+		this.mesh;
 		
+		// Asynchronous asset loading function. We have to wait for it to finish before we can do stuff with it.
+		const resultPromise = BABYLON.SceneLoader.ImportMeshAsync("", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/obj/", "Locomotive_USA_Hull.obj", scene);
+		resultPromise.then((result) => {
+			this.mesh = result.meshes[0];
+			this.mesh.position.x = 2;
+		})
+		
+		//Bogie setup
+		this.bogies = [new bogie(this.position[0].layout[position[1]].curvature.getPoints()[position[2]], position[0], position[1], position[2], moveDir)];
 		for (let i = 1; i < bogies.length; i++) {
 			var result = this.bogieIndex(bogies[i][1]);
 			
@@ -181,6 +191,7 @@ class locomotive {
 		}
 	}
 	
+	// Move hull and all bogies
 	move() {
 		for (let i = 0; i < this.bogies.length; i++) {
 			this.bogies[i].move(this.speed);

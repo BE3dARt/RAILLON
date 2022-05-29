@@ -74,14 +74,34 @@ var createScene = function () {
 		new railSegment([8.5, 0, -2.5], 270, [7, 0, -4.5], 180),
 		new railSegment([7, 0, -4.5], 180, [-7.5, 0, -4.5], 180),
 	];
+	
 
 	layout1 = new track(layout1Segments);	
 	
-	myloco = new locomotive([["Test", 0], ["Test", 0.5], ["Test", 1]], 0.02, [layout1, 0, 2], true);
+	myloco = new locomotive([["Test", 0], ["Test", 0.5], ["Test", 1]], 0.02, [layout1, 0, 2], true, scene);
 	
-	//BABYLON.SceneLoader.Append("https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/obj/", "EMD_SD60_TestExport.obj", scene, function (scene) {});
+	/*
+	var assetsManager = new BABYLON.AssetsManager(scene);
+	var type1_Hull_Task = assetsManager.addMeshTask("type1_Hull", "", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/obj/", "Locomotive_USA_Hull.obj");
+	var type1_Bogie_Task = assetsManager.addMeshTask("type1_Bogie", "", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/obj/", "Locomotive_USA_Bogie.obj");
 	
-	BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/obj/", "EMD_SD60_.obj", scene);
+	var test;
+	type1_Hull_Task.onSuccess = function (task) {
+	    test = task.loadedMeshes[4];
+		test.position = new BABYLON.Vector3(0.1435, 0.1435, 0.1435);
+		//task.loadedMeshes[0].scaling = BABYLON.Vector3(2,1,1);
+	}	
+	
+	assetsManager.onFinish = function (tasks) {
+		
+		test.position = new BABYLON.Vector3(1, 1, 1);
+		engine.runRenderLoop(function () {
+			scene.render();
+		});
+	};
+	
+	assetsManager.load();
+	*/
 	
 	// Code in this function will run ~60 times per second
 	scene.registerBeforeRender(function () {
