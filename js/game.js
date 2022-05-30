@@ -83,10 +83,10 @@ var createScene = function () {
 	layout1 = new track(layout1Segments);
 	
 	// Create locomotives
-	myloco = new locomotive("Locomotive_USA_rotated", 0.015, [layout1, 1, 1], false, false, scene);
+	myloco = new locomotive("Locomotive_USA_rotated", 0.015, [layout1, 7, 15], true, true, scene);
 	//myloco = new locomotive("Locomotive_USA_rotated", 0.015, [layout1, 1, 2], true, true, scene);
 	//myloco2 = new locomotive("Locomotive_USA_rotated", 0.015, [layout1, 0, 10], true, false, scene);
-	
+
 	// Code in this function will run ~60 times per second
 	scene.registerBeforeRender(function () {
 		

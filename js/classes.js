@@ -120,7 +120,6 @@ class bogie {
 		this.mesh.rotation.y = (angle.radians() *-1) + Math.PI/2;
 		this.mesh.position = ptRes;
 		
-		
 		// Check whether we overshoot the last (or the first) Vector3 entry in the segment.
 		if (dirVec.length() <= dirVecUnit.length()) {
 			
@@ -197,7 +196,7 @@ class locomotive {
 			
 			if (distanceVec >= range) {
 				
-				var posSecondBogiePrevious = this.position[0].layout[trackIndex].curvature.getPoints()[subTrackIndex-1];
+				var posSecondBogiePrevious = this.position[0].layout[trackIndex].curvature.getPoints()[subTrackIndex-1]; // -1 ONLY FOR FORWARD, we need to add the next subindex if we go backwards!
 				var testus = intersection(posFirstBogie, posSecondBogie, posSecondBogiePrevious, range, this.scene);
 				
 				return [testus, trackIndex, subTrackIndex-1];

@@ -18,11 +18,21 @@ function angleTo2DVector (angle, precision) {
 // Return a vector of the point which is on the line between pt1 and pt2 but also a given len away from home.
 function intersection (home, pt1, pt2, len, scene) { // DELETE SCENE
 	
+	if (BABYLON.Vector3.Distance(home, pt2) > len) {
+		throw "No point found with given length!"
+	}
+	
+	console.log("(" + home.x + ", " + home.z + ")");
+	console.log("(" + pt1.x + ", " + pt1.z + ")");
+	console.log("(" + pt2.x + ", " + pt2.z + ")");
+	
 	//Build orthogonal triangle
 	var distance_home_to_pt2  = BABYLON.Vector3.Distance(home, pt2);
-	var angle_orthogonal_triangle = new BABYLON.Angle (BABYLON.Angle.BetweenTwoPoints(pt2, home).radians() - BABYLON.Angle.BetweenTwoPoints(pt2, pt1).radians())
+	var angle_orthogonal_triangle = new BABYLON.Angle (BABYLON.Angle.BetweenTwoPoints(pt2, home).radians() - BABYLON.Angle.BetweenTwoPoints(pt2, pt1).radians()) // Wired behaviour if this is zero
 	var distance_line_to_home = Math.sin(angle_orthogonal_triangle.radians()) * distance_home_to_pt2;
-	var len_orthogonal_triangle_on_line = Math.cos(angle_orthogonal_triangle.radians()) * distance_home_to_pt2;
+	
+	// Had to fix bug where cos returned 1 if angle is set to 0. It would always give back -1. (Problem could be seen at e.g. (7, 15) or (1, 3))
+	var len_orthogonal_triangle_on_line = Math.abs(Math.cos(angle_orthogonal_triangle.radians())) * -1 * distance_home_to_pt2;
 
 	//Pythagorean theorem
 	var adder = Math.sqrt(Math.pow(len, 2) - Math.pow(distance_line_to_home, 2));
@@ -35,18 +45,27 @@ function intersection (home, pt1, pt2, len, scene) { // DELETE SCENE
 	//Apply direction vector to pt2 to get the intersection point
 	var ptRes = new BABYLON.Vector3(pt2.x + dirVecUnit.x, pt2.y + dirVecUnit.y, pt2.z + dirVecUnit.z);
 	
+	console.log("(" + ptRes.x + ", " + ptRes.z + ")");
+	
 	// Display first position of Bogie for debug
 	var Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
 	Debug.position = home;
 	Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
 	
-	var Debug1 = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
-	Debug1.position =  new BABYLON.Vector3(pt2.x + dirVec.x, pt2.y + dirVec.y, pt2.z + dirVec.z);
-	Debug1.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
 	
-	var Debugw = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
-	Debugw.position = ptRes;
-	Debugw.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+	Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+	Debug.position = pt1;
+	Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+	
+	
+	Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+	Debug.position = pt2;
+	Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+	
+	
+	Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+	Debug.position = ptRes;
+	Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
 
 	return ptRes;
 }
