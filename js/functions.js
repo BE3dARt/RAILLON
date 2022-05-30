@@ -16,14 +16,14 @@ function angleTo2DVector (angle, precision) {
 }
 
 // Return a vector of the point which is on the line between pt1 and pt2 but also a given len away from home.
-function intersection (home, pt1, pt2, len) {
+function intersection (home, pt1, pt2, len, scene) { // DELETE SCENE
 	
 	//Build orthogonal triangle
 	var distance_home_to_pt2  = BABYLON.Vector3.Distance(home, pt2);
 	var angle_orthogonal_triangle = new BABYLON.Angle (BABYLON.Angle.BetweenTwoPoints(pt2, home).radians() - BABYLON.Angle.BetweenTwoPoints(pt2, pt1).radians())
 	var distance_line_to_home = Math.sin(angle_orthogonal_triangle.radians()) * distance_home_to_pt2;
 	var len_orthogonal_triangle_on_line = Math.cos(angle_orthogonal_triangle.radians()) * distance_home_to_pt2;
-	
+
 	//Pythagorean theorem
 	var adder = Math.sqrt(Math.pow(len, 2) - Math.pow(distance_line_to_home, 2));
 	
@@ -34,6 +34,19 @@ function intersection (home, pt1, pt2, len) {
 	
 	//Apply direction vector to pt2 to get the intersection point
 	var ptRes = new BABYLON.Vector3(pt2.x + dirVecUnit.x, pt2.y + dirVecUnit.y, pt2.z + dirVecUnit.z);
+	
+	// Display first position of Bogie for debug
+	var Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+	Debug.position = home;
+	Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+	
+	var Debug1 = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+	Debug1.position =  new BABYLON.Vector3(pt2.x + dirVec.x, pt2.y + dirVec.y, pt2.z + dirVec.z);
+	Debug1.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+	
+	var Debugw = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+	Debugw.position = ptRes;
+	Debugw.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
 
 	return ptRes;
 }

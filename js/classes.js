@@ -145,6 +145,7 @@ class locomotive {
 		
 		this.mesh; // Will hold the hull mesh
 		
+		this.scene = scene; // DELETE AFTER DEBUG
 		
 		// Asynchronous asset loading function. We have to wait for it to finish before we can do stuff with it.
 		const resultPromise = BABYLON.SceneLoader.ImportMeshAsync("", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/glb/", meshName + ".glb", scene);
@@ -197,8 +198,7 @@ class locomotive {
 			if (distanceVec >= range) {
 				
 				var posSecondBogiePrevious = this.position[0].layout[trackIndex].curvature.getPoints()[subTrackIndex-1];
-				
-				var testus = intersection(posFirstBogie, posSecondBogie, posSecondBogiePrevious, range);
+				var testus = intersection(posFirstBogie, posSecondBogie, posSecondBogiePrevious, range, this.scene);
 				
 				return [testus, trackIndex, subTrackIndex-1];
 			}
