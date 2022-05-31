@@ -18,7 +18,7 @@ var createScene = function () {
 	var scene = new BABYLON.Scene(engine);
 
 	// This creates and positions a free camera (non-mesh)
-	var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, new BABYLON.Vector3(0, 4, -5), scene);
+	var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, new BABYLON.Vector3(0, 15, -5), scene);
 	
 	//Use the right hand system because Cinema 4D apparently can't flip x axis for .glb exports.
 	scene.useRightHandedSystem = true;
@@ -83,7 +83,7 @@ var createScene = function () {
 	layout1 = new track(layout1Segments);
 	
 	// Create locomotives
-	myloco = new locomotive("Locomotive_USA_rotated", 0.015, [layout1, 7, 15], true, true, scene);
+	myloco = new locomotive("Locomotive_USA_rotated", 0.015, [layout1, 1, 2, 0], true, false, scene);
 	//myloco = new locomotive("Locomotive_USA_rotated", 0.015, [layout1, 1, 2], true, true, scene);
 	//myloco2 = new locomotive("Locomotive_USA_rotated", 0.015, [layout1, 0, 10], true, false, scene);
 

@@ -134,7 +134,9 @@ class bogie {
 // A locomotive consists of at least two bogies
 class locomotive {
 	
-	// position: [track, trackIndex, subTrackIndex]
+	// Implement interpolation!! So that position inbetween sub-track-indexes are also supported!
+	
+	// position: [track, trackIndex, subTrackIndex, interpolation]
 	constructor(meshName, speed, position, moveDir, heading, scene) {
 		this.speed = speed;
 		this.position = position;
@@ -173,7 +175,8 @@ class locomotive {
 				var result = this.bogieIndex(distanceVec);
 				
 				// Initialize every other bogie
-				this.bogies.push(new bogie(result[0], position[0], result[1], result[2], moveDir, load3D.meshes[i]));
+				//this.bogies.push(new bogie(result[0], position[0], result[1], result[2], moveDir, load3D.meshes[i]));
+				this.bogies.push(new bogie(result[0], position[0], result[1], result[2], moveDir, BABYLON.MeshBuilder.CreateBox("box", {}, scene)));
 			}
 			
 			// Green light to all other functions
@@ -196,14 +199,22 @@ class locomotive {
 			
 			if (distanceVec >= range) {
 				
-				var posSecondBogiePrevious = this.position[0].layout[trackIndex].curvature.getPoints()[subTrackIndex-1]; // -1 ONLY FOR FORWARD, we need to add the next subindex if we go backwards!
-				var testus = intersection(posFirstBogie, posSecondBogie, posSecondBogiePrevious, range, this.scene);
+				// Added ! to this.moveDir to invert expression because:
+				// Technically it was not the first bogie! It's the rear-most one.
+				var posSecondBogiePrevious;
+				if (!this.moveDir == true) {
+					posSecondBogiePrevious = this.position[0].layout[trackIndex].curvature.getPoints()[subTrackIndex - 1];
+				}
+				else {
+					posSecondBogiePrevious = this.position[0].layout[trackIndex].curvature.getPoints()[subTrackIndex + 1];
+				}
 				
+				var testus = intersection(posFirstBogie, posSecondBogie, posSecondBogiePrevious, range, this.scene);
 				return [testus, trackIndex, subTrackIndex-1];
 			}
 			
 			//Verify if index is still correct
-			var updateIndex = verifyIndex (this.moveDir, this.position[0], trackIndex, subTrackIndex);
+			var updateIndex = verifyIndex (!this.moveDir, this.position[0], trackIndex, subTrackIndex);
 			trackIndex = updateIndex[0];
 			subTrackIndex = updateIndex[1];
 		}
@@ -250,7 +261,32 @@ class wagon {
 // A train consists of a couple of wagons
 class train {
 	
+	// Composition: [["Name", heading]]
+	constructor(compositionInitialized, speed, position, moveDir, scene) {
+		
+		this.speed = speed;
+		this.moveDir = moveDir;
+		
+		// locomotive class needs to be able to be placed by coordinates not just indexes: Interpolation
+		this.composition = [new locomotive(compositionInitialized[0][0], 0.015, [layout1, 1, 2, 0], this.moveDir, compositionInitialized[0][1], scene)];
+		
+		// This bit: [layout1, 1, 2, 0] needs to be calculated for the following members of the composition.
+		for (let i = 1; i < composition.length; i++) {
+			this.composition.push()
+		}
+	}
+	
+	// Position is defined as:
+	// [layout, segment, subsegment, interpolation]
+	
+	// Return array 
+	getBogiePositionNextMember() {
+		
+		// Return [layout, segment, subsegment, interpolation]
+	}
 }
+
+;
 
 class track {
 	constructor(layout) {

@@ -48,25 +48,24 @@ function intersection (home, pt1, pt2, len, scene) { // DELETE SCENE
 	console.log("(" + ptRes.x + ", " + ptRes.z + ")");
 	
 	// Display first position of Bogie for debug
-	var Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
-	Debug.position = home;
-	Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+	if (activeDebug == true) {
+		var Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+		Debug.position = home;
+		Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+		
+		Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+		Debug.position = pt1;
+		Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+		
+		Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+		Debug.position = pt2;
+		Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+		
+		Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+		Debug.position = ptRes;
+		Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+	}
 	
-	
-	Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
-	Debug.position = pt1;
-	Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
-	
-	
-	Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
-	Debug.position = pt2;
-	Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
-	
-	
-	Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
-	Debug.position = ptRes;
-	Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
-
 	return ptRes;
 }
 
@@ -103,4 +102,21 @@ function verifyIndex (moveDir, track, trackIndex, subTrackIndex) {
 	}
 	
 	return [trackIndex, subTrackIndex];
+}
+
+// Convert coordinates to index
+function formatIndex () {
+	
+}
+
+// Convert index to coordinates
+function formatCoordinates () {
+	
+}
+
+// Function receives position of one bogie (defined by [layout, segment, subsegment, interpolation]) and the distance to the next bogie and returns position of next bogie in index format.
+// positionOnTrack: 
+function getBogiePositionNextMember(layout, segment, subsegment, interpolation, distance, scene) {
+		
+	// Return [layout, segment, subsegment, interpolation]
 }
