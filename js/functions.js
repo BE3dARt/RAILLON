@@ -15,6 +15,41 @@ function angleTo2DVector (angle, precision) {
 	return [Math.round(x) / Math.pow(10, precision), Math.round(y) / Math.pow(10, precision)];
 }
 
+// Track layout is devided into segments. If out of bounds, set index to next segement.
+function verifyIndex (moveDir, track, trackIndex, subTrackIndex) {
+	
+	// Distinguish between forwards and backwards
+	if (moveDir == true) {
+		subTrackIndex += 1;
+	
+		// Check if segment is finished
+		if (subTrackIndex == track.layout[trackIndex].curvature.getPoints().length -1) {
+			trackIndex += 1;
+			subTrackIndex = 0;
+			
+			// Check if track is finished
+			if (trackIndex == track.layout.length) {
+				trackIndex = 0;
+			}
+		}
+	} else {
+		subTrackIndex -= 1;
+		
+		// Check if segment is at start, so move it to the end
+		if (subTrackIndex == 0) {
+			if (trackIndex == 0) {
+				trackIndex = track.layout.length -1;
+			} else {
+				trackIndex -= 1;
+			}
+			
+			subTrackIndex = track.layout[trackIndex].curvature.getPoints().length -1;
+		}
+	}
+	
+	return [trackIndex, subTrackIndex];
+}
+
 // Return a vector of the point which is on the line between pt1 and pt2 but also a given len away from home.
 function intersection (home, pt1, pt2, len, scene) { // DELETE SCENE
 	
@@ -69,54 +104,36 @@ function intersection (home, pt1, pt2, len, scene) { // DELETE SCENE
 	return ptRes;
 }
 
-// Track layout is devided into segments. If out of bounds, set index to next segement.
-function verifyIndex (moveDir, track, trackIndex, subTrackIndex) {
-	
-	// Distinguish between forwards and backwards
-	if (moveDir == true) {
-		subTrackIndex += 1;
-	
-		// Check if segment is finished
-		if (subTrackIndex == track.layout[trackIndex].curvature.getPoints().length -1) {
-			trackIndex += 1;
-			subTrackIndex = 0;
-			
-			// Check if track is finished
-			if (trackIndex == track.layout.length) {
-				trackIndex = 0;
-			}
-		}
-	} else {
-		subTrackIndex -= 1;
-		
-		// Check if segment is at start, so move it to the end
-		if (subTrackIndex == 0) {
-			if (trackIndex == 0) {
-				trackIndex = track.layout.length -1;
-			} else {
-				trackIndex -= 1;
-			}
-			
-			subTrackIndex = track.layout[trackIndex].curvature.getPoints().length -1;
-		}
-	}
-	
-	return [trackIndex, subTrackIndex];
-}
-
-// Convert coordinates to index
-function formatIndex () {
-	
-}
-
-// Convert index to coordinates
-function formatCoordinates () {
-	
-}
-
 // Function receives position of one bogie (defined by [layout, segment, subsegment, interpolation]) and the distance to the next bogie and returns position of next bogie in index format.
 // positionOnTrack: 
-function getBogiePositionNextMember(layout, segment, subsegment, interpolation, distance, scene) {
+function getBogiePositionNextMember(coordinatesReferenceBogie, layout, segment, subsegment, movingDirection, distance, scene) {
+	
+	//Loop over all points in rail segement to find the starting position with correct range to first bogie
+	while (true) {
+		
+		var posSecondBogie = layout.layout[segment].curvature.getPoints()[subsegment];
+		var distanceVec = BABYLON.Vector3.Distance(coordinatesReferenceBogie, posSecondBogie);
+		
+		if (distanceVec >= distance) {
+			
+			// Added ! to this.movingDirection to invert expression because:
+			// Technically it was not the first bogie! It's the rear-most one.
+			var posSecondBogiePrevious;
+			if (!movingDirection == true) {
+				posSecondBogiePrevious = layout.layout[segment].curvature.getPoints()[subsegment - 1];
+			}
+			else {
+				posSecondBogiePrevious = layout.layout[segment].curvature.getPoints()[subsegment + 1];
+			}
+			
+			return [intersection(coordinatesReferenceBogie, posSecondBogie, posSecondBogiePrevious, distance, scene), segment, subsegment];
+		}
+		
+		//Verify if index is still correct
+		var updateIndex = verifyIndex (!movingDirection, layout, segment, subsegment);
+		segment = updateIndex[0];
+		subsegment = updateIndex[1];
+		}
 		
 	// Return [layout, segment, subsegment, interpolation]
 }

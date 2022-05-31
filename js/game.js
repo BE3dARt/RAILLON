@@ -82,15 +82,14 @@ var createScene = function () {
 	];
 	layout1 = new track(layout1Segments);
 	
-	// Create locomotives
-	myloco = new locomotive("Locomotive_USA_rotated", 0.015, [layout1, 1, 2, 0], true, false, scene);
-	//myloco = new locomotive("Locomotive_USA_rotated", 0.015, [layout1, 1, 2], true, true, scene);
-	//myloco2 = new locomotive("Locomotive_USA_rotated", 0.015, [layout1, 0, 10], true, false, scene);
+	// Create new train
+	newComposition = new train([["Locomotive_USA_rotated", true], ["Locomotive_USA_rotated", false]], layout1, 3, 2, true, 0.0015, scene);
 
 	// Code in this function will run ~60 times per second
 	scene.registerBeforeRender(function () {
 		
-		myloco.move()
+		newComposition.initialize()
+		newComposition.move()
 		
 		// Display FPS
 		divFps.innerHTML = engine.getFps().toFixed() + " fps";
