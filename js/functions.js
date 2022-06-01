@@ -1,12 +1,9 @@
+//Convert degrees into radian (Will be replaced by BABYLON native angles)
 function radian (deg) {
 	return deg * (Math.PI/180);
 }
 
-function degrees (rad) {
-	return rad * (180/Math.PI);
-}
-
-//Convert angle in degrees to a direction vector ()
+//Convert angle in degrees to a direction vector
 function angleTo2DVector (angle, precision) {
 	
 	var x = Math.cos(radian(angle)) * Math.pow(10, precision);
@@ -17,7 +14,6 @@ function angleTo2DVector (angle, precision) {
 
 // Track layout is devided into segments. If out of bounds, set index to next segement.
 function verifyIndex (moveDir, track, trackIndex, subTrackIndex) {
-	
 	
 	// Distinguish between forwards and backwards
 	if (moveDir == true) {
@@ -36,7 +32,7 @@ function verifyIndex (moveDir, track, trackIndex, subTrackIndex) {
 	} else {
 		subTrackIndex -= 1;
 		
-		// Check if segment is at start, so move it to the end
+		// If segment is at start move it to the end
 		if (subTrackIndex == 0) {
 			if (trackIndex == 0) {
 				trackIndex = track.layout.length - 1;
@@ -44,7 +40,7 @@ function verifyIndex (moveDir, track, trackIndex, subTrackIndex) {
 				trackIndex -= 1;
 			}
 			
-			subTrackIndex = track.layout[trackIndex].curvature.getPoints().length - 2; // Stupid error with -1: In some rare cases the last index of the previous segment was equal to the 0th of the new one.
+			subTrackIndex = track.layout[trackIndex].curvature.getPoints().length - 2; // Stupid error with -1: In some rare cases the last index of the previous segment was equal to the 0th of the new one. 'intersection' would not work
 		}
 	}
 	
@@ -54,10 +50,7 @@ function verifyIndex (moveDir, track, trackIndex, subTrackIndex) {
 // Return a vector of the point which is on the line between pt1 and pt2 but also a given len away from home.
 function intersection (home, pt1, pt2, len, scene) { // DELETE SCENE
 	
-	// console.log("(" + home.x + ", " + home.z + ")");
-	// console.log("(" + pt1.x + ", " + pt1.z + ")");
-	// console.log("(" + pt2.x + ", " + pt2.z + ")");
-	
+	// Throw error if no point can be found
 	if (BABYLON.Vector3.Distance(home, pt2) > len) {
 		throw "No point found with given length!"
 	}
@@ -81,10 +74,14 @@ function intersection (home, pt1, pt2, len, scene) { // DELETE SCENE
 	//Apply direction vector to pt2 to get the intersection point
 	var ptRes = new BABYLON.Vector3(pt2.x + dirVecUnit.x, pt2.y + dirVecUnit.y, pt2.z + dirVecUnit.z);
 	
-	// console.log("(" + ptRes.x + ", " + ptRes.z + ")");
-	
 	// Display first position of Bogie for debug
 	if (activeDebug == true) {
+		
+		console.log("(" + home.x + ", " + home.z + ")");
+		console.log("(" + pt1.x + ", " + pt1.z + ")");
+		console.log("(" + pt2.x + ", " + pt2.z + ")");
+		console.log("(" + ptRes.x + ", " + ptRes.z + ")");
+		
 		var Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
 		Debug.position = home;
 		Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
@@ -105,8 +102,7 @@ function intersection (home, pt1, pt2, len, scene) { // DELETE SCENE
 	return ptRes;
 }
 
-// Function receives position of one bogie (defined by [layout, segment, subsegment, interpolation]) and the distance to the next bogie and returns position of next bogie in index format.
-// positionOnTrack: 
+// Function receives position of one bogie and the distance to the next bogie. Returns position of next bogie along with at which segment and subsegment it currently is.
 function getBogiePositionNextMember(coordinatesReferenceBogie, layout, segment, subsegment, movingDirection, distance, scene) {
 	
 	//Loop over all points in rail segement to find the starting position with correct range to first bogie
@@ -117,36 +113,20 @@ function getBogiePositionNextMember(coordinatesReferenceBogie, layout, segment, 
 		
 		if (distanceVec >= distance) {
 			
-			// Added ! to this.movingDirection to invert expression because:
-			// Technically it was not the first bogie! It's the rear-most one.
-			var posSecondBogiePrevious;
-			if (!movingDirection == true) {
-				
-				var index= verifyIndex (false, layout, segment, subsegment);
-				segment = index[0];
-				subsegment = index[1];
-				
-				posSecondBogiePrevious = layout.layout[segment].curvature.getPoints()[subsegment];
-			}
-			else {
-				
-				var index= verifyIndex (true, layout, segment, subsegment);
-				segment = index[0];
-				subsegment = index[1];
-				
-				posSecondBogiePrevious = layout.layout[segment].curvature.getPoints()[subsegment];
-			}
-
-			var intersect = intersection(coordinatesReferenceBogie, posSecondBogie, posSecondBogiePrevious, distance, scene)
+			// We modify the index so we need to check the index's validity first
+			var index = verifyIndex (movingDirection, layout, segment, subsegment);
+			segment = index[0];
+			subsegment = index[1];
 			
-			return [intersect, segment, subsegment];
+			// Get previous position to build a line between present and previous point
+			posSecondBogiePrevious = layout.layout[segment].curvature.getPoints()[subsegment];
+
+			return [intersection(coordinatesReferenceBogie, posSecondBogie, posSecondBogiePrevious, distance, scene), segment, subsegment];
 		}
 		
 		//Verify if index is still correct
 		var updateIndex = verifyIndex (!movingDirection, layout, segment, subsegment);
 		segment = updateIndex[0];
 		subsegment = updateIndex[1];
-		}
-		
-	// Return [layout, segment, subsegment, interpolation]
+	}
 }

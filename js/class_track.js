@@ -2,7 +2,6 @@ class railSegment {
 	constructor(ptStart, dirStart, ptEnd, dirEnd) {
         
         this.curveModifier = 1; // Adjust how wide the cureves will be
-		this.curveSmoothness = 40; // Adjust how smooth the cureves will be (Higher numbers mean more curve points)
 		
 		// Mirror angle of end joint and adjust for 360°
         dirEnd = dirEnd + 180
@@ -18,7 +17,7 @@ class railSegment {
 		
 		// Calculate how many points are needed (Dependent on length)
         this.curvature = BABYLON.Curve3.CreateCubicBezier(this.curveStart, this.curveStartControl, this.curveEndControl, this.curveEnd, 20);
-		this.curvePointNumber = Math.round(this.curvature.length() * this.curveSmoothness );
+		this.curvePointNumber = Math.round(this.curvature.length() * curveSmoothness );
 		
 		// Execute curve
 		this.curvature = BABYLON.Curve3.CreateCubicBezier(this.curveStart, this.curveStartControl, this.curveEndControl, this.curveEnd, this.curvePointNumber);
