@@ -81,16 +81,16 @@ class train {
 					var subsegment_previous = this.trainComposition[this.trainComposition.length-1].bogies[this.trainComposition[this.trainComposition.length-1].bogies.length-1].subsegment;
 					var movingDirection_previous = this.trainComposition[this.trainComposition.length-1].bogies[this.trainComposition[this.trainComposition.length-1].bogies.length-1].movingDirection;
 					
-					// Position back coupler of first locomotive
-					var first_coupler = this.rollingStock3DModels[i-1][2][1].position;
+					// Must be adjusted dependent on the heading!!! Distance could be different if locomotive is not symmetric.
+					
+					// Furthest point away of center first locomotive
+					var first_coupler = new BABYLON.Vector3(this.rollingStock3DModels[i-1][2][1].getBoundingInfo().boundingBox.minimumWorld.x, 0, 0);
 					
 					// Position back bogie of first locomotive
 					var first_bogie = this.trainComposition[i-1].posLastBogieIn3DEditor;
 					
-					// Position front coupler of second locomotive
-					var second_coupler = this.rollingStock3DModels[i][2][0].position;
-					
-					console.log(this.rollingStock3DModels[i][2][0].getBoundingInfo())
+					// Furthest point away of center second locomotive (Maximum because mirrored)
+					var second_coupler = new BABYLON.Vector3(this.rollingStock3DModels[i][2][0].getBoundingInfo().boundingBox.maximumWorld.x, 0, 0);
 					
 					// Position front bogie of second locomotive
 					var second_bogie = this.trainComposition[i-1].posFirstBogieIn3DEditor;

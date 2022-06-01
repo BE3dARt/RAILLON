@@ -83,7 +83,7 @@ var createScene = function () {
 	layout1 = new track(layout1Segments);
 	
 	// Create new train
-	newComposition = new train([["Locomotive_USA_Couplers_Mesh", true], ["Locomotive_USA_Couplers_Mesh", true], ["Locomotive_USA_Couplers_Mesh", false]], layout1, 15, 8, true, 0.020, scene);
+	newComposition = new train([["Locomotive_USA_Couplers_Mesh_New", true], ["Locomotive_USA_Couplers_Mesh_New", true], ["Locomotive_USA_Couplers_Mesh_New", false]], layout1, 15, 8, true, 0.020, scene);
 
 	// Code in this function will run ~60 times per second
 	scene.registerBeforeRender(function () {

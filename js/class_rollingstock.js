@@ -21,7 +21,6 @@ class locomotive {
 		// Retrieve position of first bogie now before it is being moved when initializing
 		this.posFirstBogieIn3DEditor = this.bogies_3D[0].position;
 		this.posLastBogieIn3DEditor = this.bogies_3D[this.bogies_3D.length-1].position;
-		this.posFirstBogieIn3DEditor = this.bogies_3D[0].position;
 			
 		// Enable rotation for train hull
 		this.hull_3D.rotationQuaternion = null;
@@ -78,6 +77,8 @@ class locomotive {
 		
 		// Set new position
 		this.hull_3D.position = ptRes;
+		
+		// Move the coupler (Take direction vector from above and add or subract with distance. Should work because angle also takes movingDirection into account)
 	}
 }
 
