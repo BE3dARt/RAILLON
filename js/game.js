@@ -83,13 +83,14 @@ var createScene = function () {
 	layout1 = new track(layout1Segments);
 	
 	// Create new train
-	newComposition = new train([["Locomotive_USA_rotated", true], ["Locomotive_USA_rotated", false]], layout1, 3, 2, true, 0.0015, scene);
+	newComposition = new train([["Locomotive_USA_rotated", true], ["Locomotive_USA_rotated", false]], layout1, 15, 8, true, 0.030, scene);
+	
+	// Issue when speed is too fast for curveSmoothness !!!
 
 	// Code in this function will run ~60 times per second
 	scene.registerBeforeRender(function () {
 		
-		newComposition.initialize()
-		newComposition.move()
+		newComposition.update()
 		
 		// Display FPS
 		divFps.innerHTML = engine.getFps().toFixed() + " fps";

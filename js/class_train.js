@@ -3,6 +3,8 @@ class train {
 	// trainCompositionInitial: [["Name", heading]]
 	constructor(trainCompositionInitial, layout, segment, subsegment, movingDirection, speed, scene) {
 		
+		this.trainCompositionInitial = trainCompositionInitial;
+		this.layout = layout;
 		this.speed = speed;
 		this.movingDirection = movingDirection;
 		this.initialized = false;
@@ -12,38 +14,30 @@ class train {
 		
 		// Add first unit to train composition
 		this.trainComposition = [new locomotive(this.coordinates, layout, segment, subsegment, movingDirection, speed, trainCompositionInitial[0][1], trainCompositionInitial[0][0], scene)];
-		
-		/*
-		
-		for (let i = 1; i < trainCompositionInitial.length; i++) {
-			
-			console.log(this.trainComposition[this.trainComposition.length-1].initialized)
-			
-			// while (this.trainComposition[this.trainComposition.length-1].initialized == false) {console.log("Waiting...")}
-			
-			// NOW FIND WHERE TO SPAWN THE NEXT ROLLING STOCK!!!
-			
-			this.coordinates = layout.layout[segment+1].curvature.getPoints()[4];
-			
-			console.log(this.trainComposition[0].bogies)
-			
-			var previousBogiePosition = this.trainComposition[this.trainComposition.lenght-1].bogies[this.trainComposition[this.trainComposition.lenght-1].bogies.lenght-1].mesh.position;
-			
-			
-			
-			// var result = getBogiePositionNextMember(, layout, segment, subsegment, movingDirection, distance, scene) 
-			
-			this.trainComposition.push(new locomotive(this.coordinates, layout, segment+1, 4, movingDirection, speed, trainCompositionInitial[i][1], trainCompositionInitial[i][0], scene))
-		}
-		
-		*/
 	}
 	
-	initialize() {
+	update() {
 		
+		// Move train only if every unit has been initialized
+		if (this.trainCompositionInitial.length == this.trainComposition.length) {
+			this.move();
+			return;
+		}
+		
+		// If before initialized unit is done, add another one
 		if (this.trainComposition[this.trainComposition.length-1].initialized == true) {
 			
-			// Add new unit here until trainCompositionInitial is finished
+			var coordinatesReferenceBogie_previous = this.trainComposition[this.trainComposition.length-1].bogies[this.trainComposition[this.trainComposition.length-1].bogies.length-1].mesh.position;
+			var layout_previous = this.trainComposition[this.trainComposition.length-1].bogies[this.trainComposition[this.trainComposition.length-1].bogies.length-1].layout;
+			var segment_previous = this.trainComposition[this.trainComposition.length-1].bogies[this.trainComposition[this.trainComposition.length-1].bogies.length-1].segment;
+			var subsegment_previous = this.trainComposition[this.trainComposition.length-1].bogies[this.trainComposition[this.trainComposition.length-1].bogies.length-1].subsegment;
+			var movingDirection_previous = this.trainComposition[this.trainComposition.length-1].bogies[this.trainComposition[this.trainComposition.length-1].bogies.length-1].movingDirection;
+			
+			// NEXT BUILD FUNCTION TO GET DISTANCE BETWEEN UNITS, now for debug set to 0.65
+			
+			var result = getBogiePositionNextMember(coordinatesReferenceBogie_previous, layout_previous, segment_previous, subsegment_previous, movingDirection_previous, 0.65, scene);
+			
+			this.trainComposition.push(new locomotive(result[0], this.layout, result[1], result[2], this.movingDirection, this.speed, this.trainCompositionInitial[this.trainComposition.length][1], this.trainCompositionInitial[this.trainComposition.length][0], scene))
 			
 		}
 	}
@@ -59,10 +53,6 @@ class train {
 			}
 		}
 		*/
-		
-		if (this.initialized == false) {
-			return
-		}
 		
 		// Loop over every locomotive and wagon and update their position
 		for (let i = 0; i < this.trainComposition.length; i++) {

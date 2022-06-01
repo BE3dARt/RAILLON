@@ -21,6 +21,7 @@ class bogie {
 	move(speed) {
 		
 		// Every 'CreateCubicBezier' creates a list of Vector3s. Dependent on direction, chose to get the next or the previous Vector3.
+		var ptStart = this.layout.layout[this.segment].curvature.getPoints()[this.subsegment];
 		if (this.movingDirection == true) {
 			var ptDestination = this.layout.layout[this.segment].curvature.getPoints()[this.subsegment+1];
 		} else {
@@ -36,8 +37,18 @@ class bogie {
 		// Rotate bogie (Only on x-z plane at the moment)
 		var angle = BABYLON.Angle.BetweenTwoPoints(new BABYLON.Vector2(this.mesh.position.x, this.mesh.position.z), new BABYLON.Vector2(ptRes.x, ptRes.z));
 		
-		// Set ptRes to be the new position
+		// Set rotation (NEEDS FIX: Is not smooth! Must find another way!)
 		this.mesh.rotation.y = (angle.radians() *-1) + Math.PI/2;
+		
+		// Error when 
+		if (BABYLON.Vector3.Distance(this.mesh.position, ptRes) >= BABYLON.Vector3.Distance(this.mesh.position, ptDestination)) {
+			var updateIndex = verifyIndex (this.movingDirection, this.layout, this.segment, this.subsegment);
+			this.segment = updateIndex[0];
+			this.subsegment = updateIndex[1];
+			this.move(speed);
+		} 
+		
+		// Set ptRes to be the new position
 		this.mesh.position = ptRes;
 		
 		// Check whether we overshoot the last (or the first) Vector3 entry in the segment.

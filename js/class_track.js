@@ -2,7 +2,7 @@ class railSegment {
 	constructor(ptStart, dirStart, ptEnd, dirEnd) {
         
         this.curveModifier = 1; // Adjust how wide the cureves will be
-		this.curveSmoothness = 10; // Adjust how smooth the cureves will be (Higher numbers mean more curve points)
+		this.curveSmoothness = 40; // Adjust how smooth the cureves will be (Higher numbers mean more curve points)
 		
 		// Mirror angle of end joint and adjust for 360°
         dirEnd = dirEnd + 180
