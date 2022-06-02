@@ -32,6 +32,10 @@ class train {
 				
 				// Assign 3D-objects to correct group
 				for (let i = 0; i < load3D.meshes.length; i++) {
+                    
+                    //Formalities
+                    load3D.meshes[i].rotationQuaternion = null;
+                    load3D.meshes[i].rotation = BABYLON.Vector3.Zero();
 					
 					// Retrieve mesh for train hull
 					if (load3D.meshes[i].name.includes("Hull")) {
@@ -98,6 +102,8 @@ class train {
 					// Distance to the first bogie of the next locomotive
 					var distanceToNext = BABYLON.Vector3.Distance(first_coupler, first_bogie) + BABYLON.Vector3.Distance(second_coupler, second_bogie);
 					
+					console.log(BABYLON.Vector3.Distance(second_coupler, second_bogie))
+					
 					// NEXT BUILD FUNCTION TO GET DISTANCE BETWEEN UNITS, now for debug set to 0.65
 					var result = getBogiePositionNextMember(coordinatesReferenceBogie_previous, layout_previous, segment_previous, subsegment_previous, movingDirection_previous, distanceToNext, scene);
 					
@@ -118,6 +124,23 @@ class train {
 		
 		// Loop over every locomotive and wagon and update their position
 		for (let i = 0; i < this.trainComposition.length; i++) {
+			
+			// Before calling move() update the coupler positions of the previous and next unit			
+			if (i == 0 && i == this.trainComposition.length - 1) {
+				this.trainComposition[i].posCounplerPreviousUnit = null;
+				this.trainComposition[i].posCounplerNextUnit = null;
+			} else if (i == 0) {
+				this.trainComposition[i].posCounplerPreviousUnit = null;
+				this.trainComposition[i].posCounplerNextUnit = this.trainComposition[i+1].couplers_3D[0].position;
+			}else if (i == this.trainComposition.length -1) {
+				this.trainComposition[i].posCounplerPreviousUnit = this.trainComposition[i-1].couplers_3D[1].position;
+				this.trainComposition[i].posCounplerNextUnit = null;
+			} else {
+				this.trainComposition[i].posCounplerPreviousUnit = this.trainComposition[i-1].couplers_3D[1].position;
+				this.trainComposition[i].posCounplerNextUnit = this.trainComposition[i+1].couplers_3D[0].position;
+			}
+			
+			// Move train composition
 			this.trainComposition[i].move();
 		}
 	}
