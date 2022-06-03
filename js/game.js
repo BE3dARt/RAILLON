@@ -55,14 +55,11 @@ var createScene = function () {
 	
 	// Track layout
 	layout1Segments  = [
-		new railSegment([-7.5, 0, -4.5], 180, [-9, 0, -3], 90),
-		new railSegment([-9, 0, -3], 90, [-9, 0, -1], 90),
-		new railSegment([-9, 0, -1], 90, [-7.5, 0, 0.5], 0),
-		new railSegment([-7.5, 0, 0.5], 0, [-5, 0, 1], 45),
-		new railSegment([-5, 0, 1], 45, [-3, 0, 3], 45),
-		new railSegment([-3, 0, 3], 45, [0, 0, 4.5], 0),
-		new railSegment([0, 0, 4.5], 0, [7, 0, 4.5], 0),
-		new railSegment([7, 0, 4.5], 0, [8.5, 0, 3], 270),
+		new railSegment([-6.5, 0, -4.5], 180, [-9, 0, -2], 90),
+		new railSegment([-9, 0, -2], 90, [-9, 0, -1], 90),
+		new railSegment([-9, 0, -1], 90, [-4, 0, 4], 0),
+		new railSegment([-4, 0, 4], 0, [7, 0, 4], 0),
+		new railSegment([7, 0, 4], 0, [8.5, 0, 3], 270),
 		new railSegment([8.5, 0, 3], 270, [8.5, 0, 1], 270),
 		new railSegment([8.5, 0, 1], 270, [7, 0, -0.5], 180),
 		new railSegment([7, 0, -0.5], 180, [5, 0, -0.5], 180),
@@ -78,16 +75,17 @@ var createScene = function () {
 		new railSegment([4, 0, -1], 0, [7, 0, -1], 0),
 		new railSegment([7, 0, -1], 0, [8.5, 0, -2.5], 270),
 		new railSegment([8.5, 0, -2.5], 270, [7, 0, -4.5], 180),
-		new railSegment([7, 0, -4.5], 180, [-7.5, 0, -4.5], 180),
+		new railSegment([7, 0, -4.5], 180, [-6.5, 0, -4.5], 180),
 	];
 	layout1 = new track(layout1Segments);
 	
 	// Create new train
-	newComposition = new train([["Locomotive_USA_Couplers_Mesh_Extended", true], ["Locomotive_USA_Couplers_Mesh_Extended", true], ["Locomotive_USA_Couplers_Mesh_Extended", true]], layout1, 15, 8, true, 0.010, scene);
+	newComposition = new train([["Locomotive_USA_Couplers_New", true], ["Locomotive_USA_Couplers_New", true], ["Locomotive_USA_Couplers_New", true]], layout1, 15, 8, true, 0.01, scene);
 
 	// Code in this function will run ~60 times per second
 	scene.registerBeforeRender(function () {
 		
+		// Update train composition
 		newComposition.update()
 		
 		// Display FPS

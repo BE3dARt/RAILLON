@@ -11,10 +11,6 @@ class bogie {
 		this.segment = segment;
 		this.subsegment = subsegment; // If 0 and reverese, it will throw error because index out of bounds && If 1 and first position is equal to current mesh position, we will devide through 0
 		this.movingDirection = movingDirection;
-		
-		//Formalities
-		this.mesh.rotationQuaternion = null;
-		this.mesh.rotation = BABYLON.Vector3.Zero();
 	}
 	
 	// Move the bogie along the spline defined in railSegment at a given speed. (Somehow increases distance between two bogies!)
@@ -40,7 +36,6 @@ class bogie {
 		// Set rotation (NEEDS FIX: Is not smooth! Must find another way!)
 		this.mesh.rotation.y = (angle.radians() *-1) + Math.PI/2;
 		
-		// Error when 
 		if (BABYLON.Vector3.Distance(this.mesh.position, ptRes) >= BABYLON.Vector3.Distance(this.mesh.position, ptDestination)) {
 			var updateIndex = verifyIndex (this.movingDirection, this.layout, this.segment, this.subsegment);
 			this.segment = updateIndex[0];

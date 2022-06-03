@@ -11,11 +11,14 @@ class railSegment {
 		this.curveStart = new BABYLON.Vector3(ptStart[0], ptStart[1], ptStart[2]);
 		this.curveEnd = new BABYLON.Vector3(ptEnd[0], ptEnd[1], ptEnd[2]);
 		
-		// Curve control points (Define how wide the curve is)
+		// Take curve length into consideration when deciding how wide the curve should be
+		this.curveModifier = this.curveModifier * (BABYLON.Vector3.Distance(this.curveStart, this.curveEnd) / 2);
+		
+		// Curve control points (define how wide the curve is)
 		this.curveStartControl = new BABYLON.Vector3(ptStart[0] + (angleTo2DVector(dirStart, 5)[0] * this.curveModifier), 0, ptStart[2] + (angleTo2DVector(dirStart, 5)[1] * this.curveModifier));
 		this.curveEndControl = new BABYLON.Vector3(ptEnd[0] + (angleTo2DVector(dirEnd, 5)[0] * this.curveModifier), 0, ptEnd[2] + (angleTo2DVector(dirEnd, 5)[1] * this.curveModifier));
 		
-		// Calculate how many points are needed (Dependent on length)
+		// Calculate how many points are needed (dependent on length)
         this.curvature = BABYLON.Curve3.CreateCubicBezier(this.curveStart, this.curveStartControl, this.curveEndControl, this.curveEnd, 20);
 		this.curvePointNumber = Math.round(this.curvature.length() * curveSmoothness );
 		
@@ -50,8 +53,8 @@ class railSegment {
 		
 		var path3d = new BABYLON.Path3D(original);
 		var curve = path3d.getCurve();
-		
 		var track = path3d.getNormals();
+		
 		var rails = [];
 		
 		for(var p = 0; p < curve.length; p++) {

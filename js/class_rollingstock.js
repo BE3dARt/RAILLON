@@ -2,6 +2,7 @@ class locomotive {
 	
 	constructor(coordinates, layout, segment, subsegment, movingDirection, speed, heading, rollingStock3D, scene) {
 		
+		// Pass-on-variables
 		this.layout = layout;
 		this.segment = segment;
 		this.subsegment = subsegment;
@@ -10,7 +11,7 @@ class locomotive {
 		this.heading = heading;
 		this.scene = scene;
 		
-		this.initialized = false;
+		// Array holding bogie objects
 		this.bogies;
 		
 		// Declare 3D-objects
@@ -18,25 +19,21 @@ class locomotive {
 		this.bogies_3D = rollingStock3D[1];
 		this.couplers_3D = rollingStock3D[2];
 		
-		// Initial Position of couplers before moving
-		this.posCounplerFront = new BABYLON.Vector3(this.couplers_3D[0].position.x, 0, 0);
-		this.posCounplerBack = new BABYLON.Vector3(this.couplers_3D[1].position.x, 0, 0);
+		// Initial Position of couplers before moving (const)
+		this.posCouplerFront_init = new BABYLON.Vector3(this.couplers_3D[0].position.x, 0, 0);
+		this.posCouplerBack_init = new BABYLON.Vector3(this.couplers_3D[1].position.x, 0, 0);
+		
+		// Retrieve position of first bogie before it is being moved when initializing (const)
+		this.posBogieFront_init = this.bogies_3D[0].position;
+		this.posBogieBack_init = this.bogies_3D[this.bogies_3D.length-1].position;
+		
+		// Calculate spaing between couplers and bogies (const)
+		this.disCouplerToBogieFront_init = BABYLON.Vector3.Distance(this.posCouplerFront_init, this.posBogieFront_init);
+		this.disCouplerToBogieBack_init = BABYLON.Vector3.Distance(this.posCouplerBack_init, this.posBogieBack_init);
 		
 		// Coupler's position of before and after unit (Needs to be updated in "class_train.js")
-		this.posCounplerPreviousUnit = null;
-		this.posCounplerNextUnit = null;
-		
-		// Retrieve position of first bogie now before it is being moved when initializing
-		this.posFirstBogieIn3DEditor = this.bogies_3D[0].position;
-		this.posLastBogieIn3DEditor = this.bogies_3D[this.bogies_3D.length-1].position;
-		
-		// Calculate spaing between couplers and bogies
-		this.disCouplerBogieFront = BABYLON.Vector3.Distance(this.posCounplerFront, this.posFirstBogieIn3DEditor);
-		this.disCouplerBogieBack = BABYLON.Vector3.Distance(this.posCounplerBack, this.posLastBogieIn3DEditor);
-			
-		// Enable rotation for train hull
-		this.hull_3D.rotationQuaternion = null;
-		this.hull_3D.rotation = BABYLON.Vector3.Zero();
+		this.posCouplerBackPreviousUnit = null;
+		this.posCouplerFrontNextUnit = null;
 			
 		// Bogie setup
 		this.bogies = [new bogie(coordinates, layout, segment, subsegment, movingDirection, this.bogies_3D[0])]; // Initialize first bogie
@@ -45,7 +42,7 @@ class locomotive {
 		for (let i = 1; i < this.bogies_3D.length; i++) {
 			
 			// Firstly we need to calculate the distance to the first bogie.
-			var distanceVec = BABYLON.Vector3.Distance(this.posFirstBogieIn3DEditor, this.bogies_3D[i].position);
+			var distanceVec = BABYLON.Vector3.Distance(this.posBogieFront_init, this.bogies_3D[i].position);
 			
 			// Plug it into the function which will determine the bogie's position along the track.
 			var result = getBogiePositionNextMember(this.bogies[this.bogies.length-1].mesh.position, this.layout, this.segment, this.subsegment, this.movingDirection, distanceVec, scene)
@@ -53,16 +50,10 @@ class locomotive {
 			// Initialize every other bogie
 			this.bogies.push(new bogie(result[0], layout, result[1], result[2], movingDirection, this.bogies_3D[i]));
 		}
-			
-		// Green light to all other functions
-		this.initialized = true;
 	}
 	
 	// Move hull and all bogies
 	move() {
-		
-		// If meshes haven't been loaded
-		if (this.initialized == false) {return}
 		
 		// Move the bogies
 		for (let i = 0; i < this.bogies.length; i++) {
@@ -96,41 +87,32 @@ class locomotive {
 		var ptCoupler;
 		
 		// Set position of back coupler
-		coefficient = this.disCouplerBogieBack / (Math.sqrt(Math.pow(dirVec.x, 2) + Math.pow(dirVec.y, 2) + Math.pow(dirVec.z, 2)));
+		coefficient = this.disCouplerToBogieBack_init / (Math.sqrt(Math.pow(dirVec.x, 2) + Math.pow(dirVec.y, 2) + Math.pow(dirVec.z, 2)));
 		dirVecUnit = new BABYLON.Vector3(dirVec.x * coefficient, dirVec.y * coefficient, dirVec.z * coefficient);
 		ptCoupler = new BABYLON.Vector3(posLastBogie.x + dirVecUnit.x, posLastBogie.y + dirVecUnit.y, posLastBogie.z + dirVecUnit.z);
 		this.couplers_3D[1].position = ptCoupler;
 		
 		// Set position of front coupler
-		coefficient = this.disCouplerBogieFront / (Math.sqrt(Math.pow(dirVec.x * -1, 2) + Math.pow(dirVec.y * -1, 2) + Math.pow(dirVec.z * -1, 2)));
+		coefficient = this.disCouplerToBogieFront_init / (Math.sqrt(Math.pow(dirVec.x * -1, 2) + Math.pow(dirVec.y * -1, 2) + Math.pow(dirVec.z * -1, 2)));
 		dirVecUnit = new BABYLON.Vector3(dirVec.x * -1 * coefficient, dirVec.y * -1 * coefficient, dirVec.z * -1 * coefficient);
 		ptCoupler = new BABYLON.Vector3(posFirstBogie.x + dirVecUnit.x, posFirstBogie.y + dirVecUnit.y, posFirstBogie.z + dirVecUnit.z);
 		this.couplers_3D[0].position = ptCoupler;
 		
 		// Rotate front coupler
-        if (this.posCounplerPreviousUnit != null) {
-            
-            // As you can see, distance between points increases while in curve, we need to adjust for that with the position!
-            //console.log(BABYLON.Vector3.Distance(this.couplers_3D[0].position, this.posCounplerPreviousUnit))
-            
-            var angletemp = BABYLON.Angle.BetweenTwoPoints(new BABYLON.Vector2(this.couplers_3D[0].position.x, this.couplers_3D[0].position.z), new BABYLON.Vector2(this.posCounplerPreviousUnit.x, this.posCounplerPreviousUnit.z)).radians();
+        if (this.posCouplerBackPreviousUnit != null) {
+            var angletemp = BABYLON.Angle.BetweenTwoPoints(new BABYLON.Vector2(this.couplers_3D[0].position.x, this.couplers_3D[0].position.z), new BABYLON.Vector2(this.posCouplerBackPreviousUnit.x, this.posCouplerBackPreviousUnit.z)).radians();
             this.couplers_3D[0].rotation.y = angletemp *-1;
         } else {
             this.couplers_3D[0].rotation.y = (angle.radians() *-1) + (Math.PI);
         }
         
         // Rotate back coupler
-        if (this.posCounplerNextUnit != null) {
-            var angletemp = BABYLON.Angle.BetweenTwoPoints(new BABYLON.Vector2(this.couplers_3D[1].position.x, this.couplers_3D[1].position.z), new BABYLON.Vector2(this.posCounplerNextUnit.x, this.posCounplerNextUnit.z)).radians();
+        if (this.posCouplerFrontNextUnit != null) {
+            var angletemp = BABYLON.Angle.BetweenTwoPoints(new BABYLON.Vector2(this.couplers_3D[1].position.x, this.couplers_3D[1].position.z), new BABYLON.Vector2(this.posCouplerFrontNextUnit.x, this.posCouplerFrontNextUnit.z)).radians();
             this.couplers_3D[1].rotation.y = angletemp *-1;
         } else {
             this.couplers_3D[1].rotation.y = (angle.radians() *-1);
         }
-        
-        
-        
-        
-        
 	}
 }
 

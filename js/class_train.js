@@ -84,25 +84,21 @@ class train {
 					var segment_previous = this.trainComposition[this.trainComposition.length-1].bogies[this.trainComposition[this.trainComposition.length-1].bogies.length-1].segment;
 					var subsegment_previous = this.trainComposition[this.trainComposition.length-1].bogies[this.trainComposition[this.trainComposition.length-1].bogies.length-1].subsegment;
 					var movingDirection_previous = this.trainComposition[this.trainComposition.length-1].bogies[this.trainComposition[this.trainComposition.length-1].bogies.length-1].movingDirection;
-					
-					// Must be adjusted dependent on the heading!!! Distance could be different if locomotive is not symmetric.
-					
+	
 					// Furthest point away of center first locomotive
-					var first_coupler = new BABYLON.Vector3(this.rollingStock3DModels[i-1][2][1].getBoundingInfo().boundingBox.minimumWorld.x, 0, 0);
+					var first_coupler = new BABYLON.Vector3(this.rollingStock3DModels[i-1][2][1].getBoundingInfo().boundingBox.minimumWorld.x + couplerLockDistance, 0, 0);
 					
 					// Position back bogie of first locomotive
-					var first_bogie = this.trainComposition[i-1].posLastBogieIn3DEditor;
+					var first_bogie = this.trainComposition[i-1].posBogieBack_init;
 					
 					// Furthest point away of center second locomotive (Maximum because mirrored)
-					var second_coupler = new BABYLON.Vector3(this.rollingStock3DModels[i][2][0].getBoundingInfo().boundingBox.maximumWorld.x, 0, 0);
+					var second_coupler = new BABYLON.Vector3(this.rollingStock3DModels[i][2][0].getBoundingInfo().boundingBox.maximumWorld.x - couplerLockDistance, 0, 0);
 					
 					// Position front bogie of second locomotive
-					var second_bogie = this.trainComposition[i-1].posFirstBogieIn3DEditor;
+					var second_bogie = this.trainComposition[i-1].posBogieFront_init;
 					
 					// Distance to the first bogie of the next locomotive
 					var distanceToNext = BABYLON.Vector3.Distance(first_coupler, first_bogie) + BABYLON.Vector3.Distance(second_coupler, second_bogie);
-					
-					console.log(BABYLON.Vector3.Distance(second_coupler, second_bogie))
 					
 					// NEXT BUILD FUNCTION TO GET DISTANCE BETWEEN UNITS, now for debug set to 0.65
 					var result = getBogiePositionNextMember(coordinatesReferenceBogie_previous, layout_previous, segment_previous, subsegment_previous, movingDirection_previous, distanceToNext, scene);
@@ -127,17 +123,17 @@ class train {
 			
 			// Before calling move() update the coupler positions of the previous and next unit			
 			if (i == 0 && i == this.trainComposition.length - 1) {
-				this.trainComposition[i].posCounplerPreviousUnit = null;
-				this.trainComposition[i].posCounplerNextUnit = null;
+				this.trainComposition[i].posCouplerBackPreviousUnit = null;
+				this.trainComposition[i].posCouplerFrontNextUnit = null;
 			} else if (i == 0) {
-				this.trainComposition[i].posCounplerPreviousUnit = null;
-				this.trainComposition[i].posCounplerNextUnit = this.trainComposition[i+1].couplers_3D[0].position;
+				this.trainComposition[i].posCouplerBackPreviousUnit = null;
+				this.trainComposition[i].posCouplerFrontNextUnit = this.trainComposition[i+1].couplers_3D[0].position;
 			}else if (i == this.trainComposition.length -1) {
-				this.trainComposition[i].posCounplerPreviousUnit = this.trainComposition[i-1].couplers_3D[1].position;
-				this.trainComposition[i].posCounplerNextUnit = null;
+				this.trainComposition[i].posCouplerBackPreviousUnit = this.trainComposition[i-1].couplers_3D[1].position;
+				this.trainComposition[i].posCouplerFrontNextUnit = null;
 			} else {
-				this.trainComposition[i].posCounplerPreviousUnit = this.trainComposition[i-1].couplers_3D[1].position;
-				this.trainComposition[i].posCounplerNextUnit = this.trainComposition[i+1].couplers_3D[0].position;
+				this.trainComposition[i].posCouplerBackPreviousUnit = this.trainComposition[i-1].couplers_3D[1].position;
+				this.trainComposition[i].posCouplerFrontNextUnit = this.trainComposition[i+1].couplers_3D[0].position;
 			}
 			
 			// Move train composition
