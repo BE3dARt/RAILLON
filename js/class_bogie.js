@@ -1,6 +1,6 @@
 class bogie {
 	
-	constructor(coordinates, layout, segment, subsegment, movingDirection, mesh) {
+	constructor(coordinates, layout, segment, subsegment, movingDirection, speed, heading, mesh) {
 		
 		// Mesh
 		this.mesh = mesh;
@@ -11,6 +11,8 @@ class bogie {
 		this.segment = segment;
 		this.subsegment = subsegment; // If 0 and reverese, it will throw error because index out of bounds && If 1 and first position is equal to current mesh position, we will devide through 0
 		this.movingDirection = movingDirection;
+		this.speed = speed;
+		this.heading = heading;
 	}
 	
 	// Move the bogie along the spline defined in railSegment at a given speed. (Somehow increases distance between two bogies!)
@@ -34,7 +36,12 @@ class bogie {
 		var angle = BABYLON.Angle.BetweenTwoPoints(new BABYLON.Vector2(this.mesh.position.x, this.mesh.position.z), new BABYLON.Vector2(ptRes.x, ptRes.z));
 		
 		// Set rotation (NEEDS FIX: Is not smooth! Must find another way!)
-		this.mesh.rotation.y = (angle.radians() *-1) + Math.PI/2;
+		this.mesh.rotation.y = (angle.radians() *-1) + Math.PI* 3/2;
+		
+		// If locomotive is facing backwards adjust the rotation
+		if (this.heading == false) {
+			this.mesh.rotation.y += Math.PI;
+		}
 		
 		if (BABYLON.Vector3.Distance(this.mesh.position, ptRes) >= BABYLON.Vector3.Distance(this.mesh.position, ptDestination)) {
 			var updateIndex = verifyIndex (this.movingDirection, this.layout, this.segment, this.subsegment);

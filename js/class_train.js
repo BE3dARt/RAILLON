@@ -30,27 +30,68 @@ class train {
 				var bogies_3D = [];
 				var couplers_3D = [];
 				
-				// Assign 3D-objects to correct group
-				for (let i = 0; i < load3D.meshes.length; i++) {
+				// Assign 3D-objects to correct group (Forward-Heading)
+				if (this.trainCompositionInitial[i][1] == true) {
+					for (let i = 0; i < load3D.meshes.length; i++) {
                     
-                    //Formalities
-                    load3D.meshes[i].rotationQuaternion = null;
-                    load3D.meshes[i].rotation = BABYLON.Vector3.Zero();
-					
-					// Retrieve mesh for train hull
-					if (load3D.meshes[i].name.includes("Hull")) {
-						hull_3D = load3D.meshes[i];
+						//Formalities
+						load3D.meshes[i].rotationQuaternion = null;
+						load3D.meshes[i].rotation = BABYLON.Vector3.Zero();
+						
+						// Retrieve mesh for train hull
+						if (load3D.meshes[i].name.includes("Hull")) {
+							hull_3D = load3D.meshes[i];
+						}
+						
+						// Retrieve mesh for bogies
+						if (load3D.meshes[i].name.includes("Bogie")) {
+							bogies_3D.push(load3D.meshes[i]);
+						}
+						
+						// Retrieve mesh for couplers
+						if (load3D.meshes[i].name.includes("Coupler")) {
+							couplers_3D.push(load3D.meshes[i]);
+						}
+					}
+				}
+				
+				// Assign 3D-objects to correct group (Backward-Heading)
+				if (this.trainCompositionInitial[i][1] == false) {
+					for (let i = load3D.meshes.length-1; i >= 0; i--) {
+                    
+						//Formalities
+						load3D.meshes[i].rotationQuaternion = null;
+						load3D.meshes[i].rotation = BABYLON.Vector3.Zero();
+						
+						// Retrieve mesh for train hull
+						if (load3D.meshes[i].name.includes("Hull")) {
+							hull_3D = load3D.meshes[i];
+						}
+						
+						// Retrieve mesh for bogies
+						if (load3D.meshes[i].name.includes("Bogie")) {
+							bogies_3D.push(load3D.meshes[i]);
+						}
+						
+						// Retrieve mesh for couplers
+						if (load3D.meshes[i].name.includes("Coupler")) {
+							couplers_3D.push(load3D.meshes[i]);
+						}
 					}
 					
-					// Retrieve mesh for bogies
-					if (load3D.meshes[i].name.includes("Bogie")) {
-						bogies_3D.push(load3D.meshes[i]);
+					var posTemporary;
+					
+					// Adjust bogie position when facing backwards (two bogies)
+					if (bogies_3D.length == 2) {
+						posTemporary = bogies_3D[0].position;
+						bogies_3D[0].position = bogies_3D[1].position;
+						bogies_3D[1].position = posTemporary;
 					}
 					
-					// Retrieve mesh for couplers
-					if (load3D.meshes[i].name.includes("Coupler")) {
-						couplers_3D.push(load3D.meshes[i]);
-					}
+					// Adjust coupler position when facing backwards
+					posTemporary = couplers_3D[0].position;
+					couplers_3D[0].position = couplers_3D[1].position;
+					couplers_3D[1].position = posTemporary;
 				}
 				
 				this.rollingStock3DModels.push([hull_3D, bogies_3D, couplers_3D]);
@@ -86,19 +127,29 @@ class train {
 					var movingDirection_previous = this.trainComposition[this.trainComposition.length-1].bogies[this.trainComposition[this.trainComposition.length-1].bogies.length-1].movingDirection;
 	
 					// Furthest point away of center first locomotive
-					var first_coupler = new BABYLON.Vector3(this.rollingStock3DModels[i-1][2][1].getBoundingInfo().boundingBox.minimumWorld.x + couplerLockDistance, 0, 0);
+					var first_coupler;
+					if (this.trainCompositionInitial[i-1][1] == true) {
+						first_coupler = new BABYLON.Vector3(this.rollingStock3DModels[i-1][2][1].getBoundingInfo().boundingBox.minimumWorld.x + couplerLockDistance, 0, 0);
+					} else {
+						first_coupler = new BABYLON.Vector3(this.rollingStock3DModels[i-1][2][1].getBoundingInfo().boundingBox.maximumWorld.x * -1 + couplerLockDistance, 0, 0);
+					}
 					
 					// Position back bogie of first locomotive
-					var first_bogie = this.trainComposition[i-1].posBogieBack_init;
+					var first_bogie = this.trainComposition[i-1].posBogieBack_init; //OK
 					
 					// Furthest point away of center second locomotive (Maximum because mirrored)
-					var second_coupler = new BABYLON.Vector3(this.rollingStock3DModels[i][2][0].getBoundingInfo().boundingBox.maximumWorld.x - couplerLockDistance, 0, 0);
+					var second_coupler;
+					if (this.trainCompositionInitial[i][1] == true) {
+						second_coupler = new BABYLON.Vector3(this.rollingStock3DModels[i][2][0].getBoundingInfo().boundingBox.maximumWorld.x - couplerLockDistance, 0, 0);
+					} else {
+						second_coupler = new BABYLON.Vector3(this.rollingStock3DModels[i][2][0].getBoundingInfo().boundingBox.minimumWorld.x * -1 - couplerLockDistance, 0, 0);
+					}
 					
 					// Position front bogie of second locomotive
-					var second_bogie = this.trainComposition[i-1].posBogieFront_init;
+					var second_bogie = this.trainComposition[i-1].posBogieFront_init; //OK
 					
 					// Distance to the first bogie of the next locomotive
-					var distanceToNext = BABYLON.Vector3.Distance(first_coupler, first_bogie) + BABYLON.Vector3.Distance(second_coupler, second_bogie);
+					var distanceToNext = BABYLON.Vector3.Distance(first_coupler, first_bogie) + BABYLON.Vector3.Distance(second_coupler, second_bogie); 
 					
 					// NEXT BUILD FUNCTION TO GET DISTANCE BETWEEN UNITS, now for debug set to 0.65
 					var result = getBogiePositionNextMember(coordinatesReferenceBogie_previous, layout_previous, segment_previous, subsegment_previous, movingDirection_previous, distanceToNext, scene);

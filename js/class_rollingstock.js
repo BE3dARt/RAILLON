@@ -34,9 +34,9 @@ class locomotive {
 		// Coupler's position of before and after unit (Needs to be updated in "class_train.js")
 		this.posCouplerBackPreviousUnit = null;
 		this.posCouplerFrontNextUnit = null;
-			
+		
 		// Bogie setup
-		this.bogies = [new bogie(coordinates, layout, segment, subsegment, movingDirection, this.bogies_3D[0])]; // Initialize first bogie
+		this.bogies = [new bogie(coordinates, layout, segment, subsegment, movingDirection, speed, heading, this.bogies_3D[0])]; // Initialize first bogie
 			
 		// Initialize every other bogie (Start with 3 because 0th is 'root', 1st 'hull' and 2nd 'bogie 1')
 		for (let i = 1; i < this.bogies_3D.length; i++) {
@@ -48,8 +48,9 @@ class locomotive {
 			var result = getBogiePositionNextMember(this.bogies[this.bogies.length-1].mesh.position, this.layout, this.segment, this.subsegment, this.movingDirection, distanceVec, scene)
 			
 			// Initialize every other bogie
-			this.bogies.push(new bogie(result[0], layout, result[1], result[2], movingDirection, this.bogies_3D[i]));
+			this.bogies.push(new bogie(result[0], layout, result[1], result[2], movingDirection, speed, heading, this.bogies_3D[i]));
 		}
+
 	}
 	
 	// Move hull and all bogies
