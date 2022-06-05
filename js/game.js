@@ -80,14 +80,27 @@ var createScene = function () {
 	layout1 = new track(layout1Segments);
 	
 	// Create new train (Current bugs: Subsegement = 0 (both))
-	newComposition = new train([["Locomotive_USA_Testbed", true], ["Locomotive_USA_Testbed", false], ["Locomotive_USA_Testbed", false]], layout1, 0, 0, true, 0.02, scene);
+	var compositions = [];
+	compositions.push(new train([["Locomotive_USA_Testbed", true], ["Locomotive_USA_Testbed", false], ["Locomotive_USA_Testbed", true], ["Locomotive_USA_Testbed", false]], layout1, 0, 0, true, 0.02, scene));
 
+	// Event on mesh-click
+    scene.onPointerPick = function (evt, pickResult) {
+		
+		// Restrict trigger to left mouse button
+		if (evt.button == 0) {
+			if (pickResult.hit) {
+				console.log(idToIndex(compositions, pickResult.pickedMesh.uniqueId))
+			}
+		}
+    };
+	
 	// Code in this function will run ~60 times per second
 	scene.registerBeforeRender(function () {
 		
 		// Update train composition
-		newComposition.update()
-		
+		for (let i = 0; i < compositions.length; i++) {
+			compositions[i].update()
+		}
 		// Display FPS
 		divFps.innerHTML = engine.getFps().toFixed() + " fps";
 		

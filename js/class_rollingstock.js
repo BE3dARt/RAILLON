@@ -19,6 +19,22 @@ class locomotive {
 		this.bogies_3D = rollingStock3D[1];
 		this.couplers_3D = rollingStock3D[2];
 		
+		// Array holding all mesh identifications (Used to tell if user clicked mesh belongs to this rolling stock or not)
+		this.meshIDs = [];
+	
+		// Get hull mesh id
+		this.meshIDs.push(this.hull_3D.uniqueId);
+		
+		// Get bogie mesh ids
+		for (let i = 0; i < this.bogies_3D.length; i++) {
+			this.meshIDs.push(this.bogies_3D[i].uniqueId);
+		}
+		
+		// Get coupler mesh ids
+		for (let i = 0; i < this.couplers_3D.length; i++) {
+			this.meshIDs.push(this.couplers_3D[i].uniqueId);
+		}
+		
 		// Initial Position of couplers before moving (const)
 		this.posCouplerFront_init = new BABYLON.Vector3(this.couplers_3D[0].position.x, 0, 0);
 		this.posCouplerBack_init = new BABYLON.Vector3(this.couplers_3D[1].position.x, 0, 0);

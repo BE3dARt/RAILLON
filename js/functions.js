@@ -138,3 +138,24 @@ function getBogiePositionNextMember(coordinatesReferenceBogie, layout, segment, 
 		subsegment = updateIndex[1];
 	}
 }
+
+// Provide array containing every train composition and a mesh id to receive the index of the train and the index of the locomotive
+function idToIndex(compositions, meshIdentification) {
+	
+	// Loop over all compositions
+	for (let cIndex = 0; cIndex < compositions.length; cIndex++) {
+		
+		// Loop over every rolling stock unit in this specific composition
+		for (let rsIndex = 0; rsIndex < compositions[cIndex].trainComposition.length; rsIndex++) {
+			
+			// Loop over every sub mesh of this specific rolling stock unit
+			for (let sbIndex = 0; sbIndex < compositions[cIndex].trainComposition[rsIndex].meshIDs.length; sbIndex++) {
+				if (compositions[cIndex].trainComposition[rsIndex].meshIDs[sbIndex] == meshIdentification) {
+					return [cIndex, rsIndex, sbIndex];
+				}
+			}
+		}
+	}
+	
+	return null
+}
