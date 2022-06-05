@@ -163,10 +163,15 @@ class train {
 					var second_bogie = this.trainComposition[i-1].posBogieFront_init; //OK
 					
 					// Distance to the first bogie of the next locomotive
-					var distanceToNext = BABYLON.Vector3.Distance(first_coupler, first_bogie) + BABYLON.Vector3.Distance(second_coupler, second_bogie); 
+					var distanceToNext = BABYLON.Vector3.Distance(first_coupler, first_bogie) + BABYLON.Vector3.Distance(second_coupler, second_bogie);
+					
+					// Debug distance between back bogie of first rolling stock unit and front bogie of second rolling stock unit.
+					if (activeDebug == true) {
+						console.log(distanceToNext);
+					}
 					
 					// NEXT BUILD FUNCTION TO GET DISTANCE BETWEEN UNITS, now for debug set to 0.65
-					var result = getBogiePositionNextMember(coordinatesReferenceBogie_previous, layout_previous, segment_previous, subsegment_previous, movingDirection_previous, distanceToNext, scene);
+					var result = getPosNextBogie(coordinatesReferenceBogie_previous, layout_previous, segment_previous, subsegment_previous, movingDirection_previous, distanceToNext, scene);
 					
 					this.trainComposition.push(new locomotive(result[0], this.layout, result[1], result[2], this.movingDirection, this.speed, this.trainCompositionInitial[this.trainComposition.length][1], this.rollingStock3DModels[i], scene))
 				
@@ -182,6 +187,11 @@ class train {
 	
 	// Move train as a whole
 	move() {
+		
+		// Debug distance between back bogie of first rolling stock unit and front bogie of second rolling stock unit.
+		if (activeDebug == true) {
+			console.log(BABYLON.Vector3.Distance(this.trainComposition[0].bogies_3D[1].position, this.trainComposition[1].bogies_3D[0].position));
+		}
 		
 		// Loop over every locomotive and wagon and update their position
 		for (let i = 0; i < this.trainComposition.length; i++) {

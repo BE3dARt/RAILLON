@@ -60,8 +60,13 @@ class locomotive {
 			// Firstly we need to calculate the distance to the first bogie.
 			var distanceVec = BABYLON.Vector3.Distance(this.posBogieFront_init, this.bogies_3D[i].position);
 			
+			// Debug distance between bogies of rolling stock unit.
+			if (activeDebug == true) {
+				console.log(distanceVec);
+			}
+			
 			// Plug it into the function which will determine the bogie's position along the track.
-			var result = getBogiePositionNextMember(this.bogies[this.bogies.length-1].mesh.position, this.layout, this.segment, this.subsegment, this.movingDirection, distanceVec, scene)
+			var result = getPosNextBogie(this.bogies[this.bogies.length-1].mesh.position, this.layout, this.segment, this.subsegment, this.movingDirection, distanceVec, scene)
 			
 			// Initialize every other bogie
 			this.bogies.push(new bogie(result[0], layout, result[1], result[2], movingDirection, speed, heading, this.bogies_3D[i]));
@@ -74,7 +79,12 @@ class locomotive {
 		
 		// Move the bogies
 		for (let i = 0; i < this.bogies.length; i++) {
-			this.bogies[i].move(this.speed);
+			this.bogies[i].move();
+		}
+		
+		// Debug distance between bogies of rolling stock unit.
+		if (activeDebug == true) {
+			console.log(BABYLON.Vector3.Distance(this.bogies[0].mesh.position, this.bogies[this.bogies.length-1].mesh.position));
 		}
 		
 		// Move the hull

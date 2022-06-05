@@ -55,6 +55,8 @@ function verifyIndex (moveDir, track, segment, subsegment) {
 	return [segment, subsegment];
 }
 
+/*
+
 // Return a vector of the point which is on the line between pt1 and pt2 but also a given len away from home.
 function intersection (home, pt1, pt2, len, scene) { // DELETE SCENE
 	
@@ -128,14 +130,71 @@ function getBogiePositionNextMember(coordinatesReferenceBogie, layout, segment, 
 			
 			// Get previous position to build a line between present and previous point
 			posSecondBogiePrevious = layout.layout[segment].curvature.getPoints()[subsegment];
+			
+			var ptintersection = intersection(coordinatesReferenceBogie, posSecondBogie, posSecondBogiePrevious, distance, scene);
+			
 
-			return [intersection(coordinatesReferenceBogie, posSecondBogie, posSecondBogiePrevious, distance, scene), segment, subsegment];
+			return [ptintersection, segment, subsegment];
 		}
 		
 		//Verify if index is still correct
 		var updateIndex = verifyIndex (!movingDirection, layout, segment, subsegment);
 		segment = updateIndex[0];
 		subsegment = updateIndex[1];
+	}
+}
+
+*/
+
+// I might regret it but I need to test it ... 
+function getPosNextBogie(coordinatesReferenceBogie, layout, segment, subsegment, movingDirection, distance, scene) {
+	
+	var ptPrevious = layout.layout[segment].curvature.getPoints()[subsegment];
+	var indexPrevious = [segment, subsegment];
+	var ptNext;
+	
+	var disSum = BABYLON.Vector3.Distance(coordinatesReferenceBogie, ptPrevious) * -1;
+	
+	while (true) {
+		
+		// Verify if index is still correct
+		var updateIndex = verifyIndex (!movingDirection, layout, segment, subsegment);
+		segment = updateIndex[0];
+		subsegment = updateIndex[1];
+		
+		// Get current pt
+		ptNext = layout.layout[segment].curvature.getPoints()[subsegment];
+		
+		// Calculate distance between previous and next point (pt)
+		var disBetweenPoints = BABYLON.Vector3.Distance(ptPrevious, ptNext);
+		
+		// Check if we are in correct subsegment
+		if (disSum + disBetweenPoints >= distance) {
+			
+			// Get distance from last point on curve to target
+			var disTemporary = Math.abs(distance - disSum);
+			
+			// Form direction vector
+			var dirVec = new BABYLON.Vector3(ptNext.x - ptPrevious.x, ptNext.y - ptPrevious.y, ptNext.z - ptPrevious.z);
+			var coefficient = disTemporary / (Math.sqrt(Math.pow(dirVec.x, 2) + Math.pow(dirVec.y, 2) + Math.pow(dirVec.z, 2)));
+			var dirVecUnit = new BABYLON.Vector3(dirVec.x * coefficient, dirVec.y * coefficient, dirVec.z * coefficient);
+			
+			var ptRes = new BABYLON.Vector3(ptPrevious.x + dirVecUnit.x, ptPrevious.y + dirVecUnit.y, ptPrevious.z + dirVecUnit.z);
+			
+			return [ptRes, indexPrevious[0], indexPrevious[1]]
+			
+		}
+		
+		// Reset ptPrevious
+		ptPrevious = ptNext;
+		
+		// Reset previous index
+		indexPrevious[0] = updateIndex[0];
+		indexPrevious[1] = updateIndex[1];
+		
+		// Add to sum
+		disSum += disBetweenPoints;
+		
 	}
 }
 
@@ -158,4 +217,10 @@ function idToIndex(compositions, meshIdentification) {
 	}
 	
 	return null
+}
+
+// Provide speed and time between frames and receive displacement
+function speedToDistance(speed, time) {
+	return (speed * (time/1000))/10;
+	// console.log((this.speed / (engine.getDeltaTime() / 1000)) * 10); // In m/s
 }

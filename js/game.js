@@ -81,7 +81,7 @@ var createScene = function () {
 	
 	// Create new train (Current bugs: Subsegement = 0 (both))
 	var compositions = [];
-	compositions.push(new train([["Locomotive_USA_Testbed", true], ["Locomotive_USA_Testbed", false], ["Locomotive_USA_Testbed", true], ["Locomotive_USA_Testbed", false]], layout1, 0, 0, true, 0.02, scene));
+	compositions.push(new train([["Locomotive_USA_Testbed", true], ["Locomotive_USA_Testbed", false], ["Locomotive_USA_Testbed", true]], layout1, 21, 1, false, 0.02, scene));
 
 	// Event on mesh-click
     scene.onPointerPick = function (evt, pickResult) {
@@ -89,7 +89,11 @@ var createScene = function () {
 		// Restrict trigger to left mouse button
 		if (evt.button == 0) {
 			if (pickResult.hit) {
-				console.log(idToIndex(compositions, pickResult.pickedMesh.uniqueId))
+				
+				var index = idToIndex(compositions, pickResult.pickedMesh.uniqueId);
+				if (index != null) {
+					console.log(index)
+				}
 			}
 		}
     };
