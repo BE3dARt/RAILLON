@@ -13,38 +13,46 @@ function angleTo2DVector (angle, precision) {
 }
 
 // Track layout is devided into segments. If out of bounds, set index to next segement.
-function verifyIndex (moveDir, track, trackIndex, subTrackIndex) {
+function verifyIndex (moveDir, track, segment, subsegment) {
 	
 	// Distinguish between forwards and backwards
 	if (moveDir == true) {
-		subTrackIndex += 1;
-
+		
+		// Prevent it from going out of bounds
+		if (subsegment != track.layout[segment].curvature.getPoints().length - 1) {
+			subsegment += 1;
+		}
+		
 		// Check if segment is finished
-		if (subTrackIndex == track.layout[trackIndex].curvature.getPoints().length - 1) {
-			trackIndex += 1;
-			subTrackIndex = 1;
+		if (subsegment == track.layout[segment].curvature.getPoints().length - 1) {
+			segment += 1;
+			subsegment = 1; // I believe it gives error when last point of previous segement is the same as 0th index of current segment. So we target the first index instead.
 			
 			// Check if track is finished
-			if (trackIndex == track.layout.length - 1) {
-				trackIndex = 0;
+			if (segment == track.layout.length) {
+				segment = 0;
 			}
 		}
 	} else {
-		subTrackIndex -= 1;
+		
+		// Prevent it from going to -1
+		if (subsegment != 0) {
+			subsegment -= 1;
+		}
 		
 		// If segment is at start move it to the end
-		if (subTrackIndex == 0) {
-			if (trackIndex == 0) {
-				trackIndex = track.layout.length - 1;
+		if (subsegment == 0) {
+			if (segment == 0) {
+				segment = track.layout.length - 1;
 			} else {
-				trackIndex -= 1;
+				segment -= 1;
 			}
 			
-			subTrackIndex = track.layout[trackIndex].curvature.getPoints().length - 2; // Stupid error with -1: In some rare cases the last index of the previous segment was equal to the 0th of the new one. 'intersection' would not work
+			subsegment = track.layout[segment].curvature.getPoints().length - 2; // Stupid error with -1: In some rare cases the last index of the previous segment was equal to the 0th of the new one. 'intersection' would not work
 		}
 	}
 	
-	return [trackIndex, subTrackIndex];
+	return [segment, subsegment];
 }
 
 // Return a vector of the point which is on the line between pt1 and pt2 but also a given len away from home.

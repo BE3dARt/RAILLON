@@ -53,7 +53,7 @@ var createScene = function () {
 	// Initialzise FPS display
 	let divFps = document.getElementById("fps");
 	
-	// Track layout
+	// Track layout (Length 21)
 	layout1Segments  = [
 		new railSegment([-6.5, 0, -4.5], 180, [-9, 0, -2], 90),
 		new railSegment([-9, 0, -2], 90, [-9, 0, -1], 90),
@@ -79,8 +79,8 @@ var createScene = function () {
 	];
 	layout1 = new track(layout1Segments);
 	
-	// Create new train
-	newComposition = new train([["Locomotive_USA_Testbed", true], ["Locomotive_USA_Testbed", false], ["Locomotive_USA_Testbed", false]], layout1, 15, 8, true, 0.01, scene);
+	// Create new train (Current bugs: Subsegement = 0 (both))
+	newComposition = new train([["Locomotive_USA_Testbed", true], ["Locomotive_USA_Testbed", false], ["Locomotive_USA_Testbed", false]], layout1, 0, 0, true, 0.02, scene);
 
 	// Code in this function will run ~60 times per second
 	scene.registerBeforeRender(function () {

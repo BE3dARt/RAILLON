@@ -16,19 +16,21 @@ class bogie {
 	}
 	
 	// Move the bogie along the spline defined in railSegment at a given speed. (Somehow increases distance between two bogies!)
-	move(speed) {
+	move() {
 		
 		// Every 'CreateCubicBezier' creates a list of Vector3s. Dependent on direction, chose to get the next or the previous Vector3.
 		var ptStart = this.layout.layout[this.segment].curvature.getPoints()[this.subsegment];
 		if (this.movingDirection == true) {
-			var ptDestination = this.layout.layout[this.segment].curvature.getPoints()[this.subsegment+1];
+			var destinationIndex = verifyIndex (this.movingDirection, this.layout, this.segment, this.subsegment);
+			var ptDestination = this.layout.layout[destinationIndex[0]].curvature.getPoints()[destinationIndex[1]];
 		} else {
-			var ptDestination = this.layout.layout[this.segment].curvature.getPoints()[this.subsegment-1];
+			var destinationIndex = verifyIndex (this.movingDirection, this.layout, this.segment, this.subsegment);
+			var ptDestination = this.layout.layout[destinationIndex[0]].curvature.getPoints()[destinationIndex[1]];
 		}
 		
 		// Vector calculations to get eventually get the next position of the bogie.
 		var dirVec = new BABYLON.Vector3(ptDestination.x - this.mesh.position.x, ptDestination.y - this.mesh.position.y, ptDestination.z - this.mesh.position.z);
-		var coefficient = speed / (Math.sqrt(Math.pow( dirVec.x, 2) + Math.pow( dirVec.y, 2) + Math.pow( dirVec.z, 2)));
+		var coefficient = this.speed / (Math.sqrt(Math.pow( dirVec.x, 2) + Math.pow( dirVec.y, 2) + Math.pow( dirVec.z, 2)));
 		var dirVecUnit = new BABYLON.Vector3(dirVec.x * coefficient, dirVec.y * coefficient, dirVec.z * coefficient);
 		var ptRes = new BABYLON.Vector3(this.mesh.position.x + dirVecUnit.x, this.mesh.position.y + dirVecUnit.y, this.mesh.position.z + dirVecUnit.z);
 		
@@ -47,7 +49,7 @@ class bogie {
 			var updateIndex = verifyIndex (this.movingDirection, this.layout, this.segment, this.subsegment);
 			this.segment = updateIndex[0];
 			this.subsegment = updateIndex[1];
-			this.move(speed);
+			this.move();
 		} 
 		
 		// Set ptRes to be the new position
@@ -55,7 +57,6 @@ class bogie {
 		
 		// Check whether we overshoot the last (or the first) Vector3 entry in the segment.
 		if (dirVec.length() <= dirVecUnit.length()) {
-			
 			var updateIndex = verifyIndex (this.movingDirection, this.layout, this.segment, this.subsegment);
 			this.segment = updateIndex[0];
 			this.subsegment = updateIndex[1];

@@ -16,6 +16,20 @@ class train {
 		
 		this.rollingStock3DModelsInitializedCounter = 0;
 		
+		// Check if provided segment exists
+		if (this.segment < 0) {
+			this.segment = 0;
+		} else if (segment >= this.layout.layout.length) {
+			this.segment = this.layout.layout.length - 1;
+		}
+		
+		// Check if provided subsegment exists
+		if (this.subsegment < 0) {
+			this.subsegment = 0;
+		} else if (this.subsegment >= this.layout.layout[this.segment].curvature.getPoints().length) {
+			this.subsegment = this.layout.layout[this.segment].curvature.getPoints().length - 1;
+		}
+		
 		// Load all 3D models first
 		for (let i = 0; i < this.trainCompositionInitial.length; i++) {
 			
