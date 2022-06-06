@@ -8,8 +8,11 @@ class train {
 		this.segment = segment;
 		this.subsegment = subsegment;
 		this.speed = speed;
+		this.deltaDisplacement = null;
 		this.movingDirection = movingDirection;
 		this.initialized = false;
+		
+		this.status = 1; // 0: stop, 1: drive
 		
 		this.rollingStock3DModels = [];
 		this.trainComposition = [];
@@ -130,7 +133,7 @@ class train {
 					
 					// Convert the first track-index-position to coordinates
 					var coordinates = this.layout.layout[this.segment].curvature.getPoints()[this.subsegment];
-					this.trainComposition.push(new locomotive(coordinates, this.layout, this.segment, this.subsegment, this.movingDirection, this.speed, this.trainCompositionInitial[0][1], this.rollingStock3DModels[i], this.scene));
+					this.trainComposition.push(new locomotive(coordinates, this.layout, this.segment, this.subsegment, this.movingDirection, this.deltaDisplacement, this.trainCompositionInitial[0][1], this.rollingStock3DModels[i], this.scene));
 				
 				} else {
 					
@@ -173,7 +176,7 @@ class train {
 					// NEXT BUILD FUNCTION TO GET DISTANCE BETWEEN UNITS, now for debug set to 0.65
 					var result = getPosNextBogie(coordinatesReferenceBogie_previous, layout_previous, segment_previous, subsegment_previous, movingDirection_previous, distanceToNext, scene);
 					
-					this.trainComposition.push(new locomotive(result[0], this.layout, result[1], result[2], this.movingDirection, this.speed, this.trainCompositionInitial[this.trainComposition.length][1], this.rollingStock3DModels[i], scene))
+					this.trainComposition.push(new locomotive(result[0], this.layout, result[1], result[2], this.movingDirection, this.deltaDisplacement, this.trainCompositionInitial[this.trainComposition.length][1], this.rollingStock3DModels[i], scene))
 				
 				}
 			}
@@ -181,8 +184,10 @@ class train {
 			// Initialisation of all units successfully finished
 			this.initialized = true;
 		}
-
-		this.move();
+			
+		if (this.status == 1) {
+			this.move();
+		}
 	}
 	
 	// Move train as a whole
@@ -192,6 +197,30 @@ class train {
 		if (activeDebug == true) {
 			console.log(BABYLON.Vector3.Distance(this.trainComposition[0].bogies_3D[1].position, this.trainComposition[1].bogies_3D[0].position));
 		}
+		
+		var frametime; // Render time passed to speed function in ms
+		
+		// Decided between 3 cases
+		if (engine.getDeltaTime() - blurTimeElapsed < 0) {
+			
+			// Case 1: engine.getDeltaTime() is 'normal', we don't need to adjust it
+			blurTimeElapsed = 0;
+			frametime = engine.getDeltaTime();
+			if (engine.getDeltaTime() > (1000 / engine.getFps()) + 50) {
+				
+				// Case 2: engine.getDeltaTime() is absurdly high but we can't control it using 'blurTimeElapsed'. Happens when browser gets focus without actively chosing so: E.g. closing another programm and browser window is next in queue.
+				frametime = previousFrameTime;
+			}
+		} else {
+			
+			// Case 3: Default case where engine.getDeltaTime() is being adjusted by 'blurTimeElapsed', which is the time this window spent without focus.
+			frametime = engine.getDeltaTime() - blurTimeElapsed;
+		}
+		
+		// Set displacement in relation to speed and render time so that speed is always the same no matter the fps.
+		this.deltaDisplacement = speedToDistance(this.speed, frametime); 
+		
+		previousFrameTime = frametime; // Set previous frame in cases the current one can't be used
 		
 		// Loop over every locomotive and wagon and update their position
 		for (let i = 0; i < this.trainComposition.length; i++) {
@@ -212,6 +241,7 @@ class train {
 			}
 			
 			// Move train composition
+			this.trainComposition[i].deltaDisplacement = this.deltaDisplacement;
 			this.trainComposition[i].move();
 		}
 	}

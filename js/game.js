@@ -1,9 +1,45 @@
 var canvas = document.getElementById("renderCanvas");
 
+// Set up event handler to produce text for the window focus event
+window.addEventListener("focus", function(event) { 
+	blurTimeElapsed = Date.now() - blurTime;
+	
+	if (activeDebug == true) {
+		console.log("Elapsed Time since last focus: " + blurTimeElapsed); 
+		console.log("Render Time: " + engine.getDeltaTime())
+	}
+	
+	// Let compositions move again
+	for (let i = 0; i < compositions.length; i++) {
+		compositions[i].status = 1;
+	}
+	
+	// Resume Rendering
+	renderStatus == true;
+	
+}, false);
+
+// Example of the blur event as opposed to focus
+window.addEventListener("blur", function(event) { 
+	console.log("Windows lost focus");
+	blurTime = Date.now();
+	
+	// Stop compositions from moving
+	for (let i = 0; i < compositions.length; i++) {
+		compositions[i].status = 0;
+	}
+	
+	// Stop Rendering
+	renderStatus == false;
+	
+}, false);
+
 var startRenderLoop = function (engine, canvas) {
 	engine.runRenderLoop(function () {
 		if (sceneToRender && sceneToRender.activeCamera) {
-			sceneToRender.render();
+			if (renderStatus == true) {
+				sceneToRender.render();
+			}
 		}
 	});
 }
@@ -80,8 +116,7 @@ var createScene = function () {
 	layout1 = new track(layout1Segments);
 	
 	// Create new train (Current bugs: Subsegement = 0 (both))
-	var compositions = [];
-	compositions.push(new train([["Locomotive_USA_Testbed", true], ["Locomotive_USA_Testbed", false], ["Locomotive_USA_Testbed", true]], layout1, 21, 1, false, 0.02, scene));
+	compositions.push(new train([["Locomotive_USA_Testbed", true], ["Locomotive_USA_Testbed", false], ["Locomotive_USA_Testbed", true]], layout1, 2, 20, true, 10, scene));
 
 	// Event on mesh-click
     scene.onPointerPick = function (evt, pickResult) {

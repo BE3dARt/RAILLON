@@ -1,13 +1,13 @@
 class locomotive {
 	
-	constructor(coordinates, layout, segment, subsegment, movingDirection, speed, heading, rollingStock3D, scene) {
+	constructor(coordinates, layout, segment, subsegment, movingDirection, deltaDisplacement, heading, rollingStock3D, scene) {
 		
 		// Pass-on-variables
 		this.layout = layout;
 		this.segment = segment;
 		this.subsegment = subsegment;
 		this.movingDirection = movingDirection;
-		this.speed = speed;
+		this.deltaDisplacement = deltaDisplacement;
 		this.heading = heading;
 		this.scene = scene;
 		
@@ -52,7 +52,7 @@ class locomotive {
 		this.posCouplerFrontNextUnit = null;
 		
 		// Bogie setup
-		this.bogies = [new bogie(coordinates, layout, segment, subsegment, movingDirection, speed, heading, this.bogies_3D[0])]; // Initialize first bogie
+		this.bogies = [new bogie(coordinates, layout, segment, subsegment, movingDirection, deltaDisplacement, heading, this.bogies_3D[0])]; // Initialize first bogie
 			
 		// Initialize every other bogie (Start with 3 because 0th is 'root', 1st 'hull' and 2nd 'bogie 1')
 		for (let i = 1; i < this.bogies_3D.length; i++) {
@@ -69,7 +69,7 @@ class locomotive {
 			var result = getPosNextBogie(this.bogies[this.bogies.length-1].mesh.position, this.layout, this.segment, this.subsegment, this.movingDirection, distanceVec, scene)
 			
 			// Initialize every other bogie
-			this.bogies.push(new bogie(result[0], layout, result[1], result[2], movingDirection, speed, heading, this.bogies_3D[i]));
+			this.bogies.push(new bogie(result[0], layout, result[1], result[2], movingDirection, deltaDisplacement, heading, this.bogies_3D[i]));
 		}
 
 	}
@@ -79,11 +79,12 @@ class locomotive {
 		
 		// Move the bogies
 		for (let i = 0; i < this.bogies.length; i++) {
+			this.bogies[i].deltaDisplacement = this.deltaDisplacement;
 			this.bogies[i].move();
 		}
 		
 		// Debug distance between bogies of rolling stock unit.
-		if (activeDebug == true) {
+		if (activeDebug == false) {
 			console.log(BABYLON.Vector3.Distance(this.bogies[0].mesh.position, this.bogies[this.bogies.length-1].mesh.position));
 		}
 		

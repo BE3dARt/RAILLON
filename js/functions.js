@@ -222,5 +222,4 @@ function idToIndex(compositions, meshIdentification) {
 // Provide speed and time between frames and receive displacement
 function speedToDistance(speed, time) {
 	return (speed * (time/1000))/10;
-	// console.log((this.speed / (engine.getDeltaTime() / 1000)) * 10); // In m/s
 }
