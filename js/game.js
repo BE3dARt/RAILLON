@@ -21,7 +21,6 @@ window.addEventListener("focus", function(event) {
 
 // Example of the blur event as opposed to focus
 window.addEventListener("blur", function(event) { 
-	console.log("Windows lost focus");
 	blurTime = Date.now();
 	
 	// Stop compositions from moving
@@ -116,7 +115,7 @@ var createScene = function () {
 	layout1 = new track(layout1Segments);
 	
 	// Create new train (Current bugs: Subsegement = 0 (both))
-	compositions.push(new train([["Locomotive_USA_Testbed", true], ["Locomotive_USA_Testbed", false], ["Locomotive_USA_Testbed", true]], layout1, 2, 20, true, 10, scene));
+	compositions.push(new train([["Diesel_Locomotive_USA", true], ["Diesel_Locomotive_USA", false], ["Diesel_Locomotive_USA", false]], layout1, 2, 30, true, scene));
 
 	// Event on mesh-click
     scene.onPointerPick = function (evt, pickResult) {

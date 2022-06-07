@@ -148,7 +148,7 @@ function getBogiePositionNextMember(coordinatesReferenceBogie, layout, segment, 
 
 // I might regret it but I need to test it ... 
 function getPosNextBogie(coordinatesReferenceBogie, layout, segment, subsegment, movingDirection, distance, scene) {
-	
+
 	var ptPrevious = layout.layout[segment].curvature.getPoints()[subsegment];
 	var indexPrevious = [segment, subsegment];
 	var ptNext;
@@ -208,8 +208,8 @@ function idToIndex(compositions, meshIdentification) {
 		for (let rsIndex = 0; rsIndex < compositions[cIndex].trainComposition.length; rsIndex++) {
 			
 			// Loop over every sub mesh of this specific rolling stock unit
-			for (let sbIndex = 0; sbIndex < compositions[cIndex].trainComposition[rsIndex].meshIDs.length; sbIndex++) {
-				if (compositions[cIndex].trainComposition[rsIndex].meshIDs[sbIndex] == meshIdentification) {
+			for (let sbIndex = 0; sbIndex < compositions[cIndex].trainComposition[rsIndex].general.id.length; sbIndex++) {
+				if (compositions[cIndex].trainComposition[rsIndex].general.id[sbIndex] == meshIdentification) {
 					return [cIndex, rsIndex, sbIndex];
 				}
 			}
@@ -222,4 +222,14 @@ function idToIndex(compositions, meshIdentification) {
 // Provide speed and time between frames and receive displacement
 function speedToDistance(speed, time) {
 	return (speed * (time/1000))/10;
+}
+
+function unitNameToIndex (match) {
+	for (let i = 0; i < units.length; i++) {
+		if (units[i].name == match) {
+			return i;
+		}
+	}
+	
+	return -1;
 }

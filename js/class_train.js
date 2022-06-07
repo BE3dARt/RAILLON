@@ -1,14 +1,13 @@
 class train {
 	
 	// trainCompositionInitial: [["Name", heading]]
-	constructor(trainCompositionInitial, layout, segment, subsegment, movingDirection, speed, scene) {
+	constructor(trainCompositionInitial, layout, segment, subsegment, movingDirection, scene) {
 		
 		this.trainCompositionInitial = trainCompositionInitial;
 		this.layout = layout;
 		this.segment = segment;
 		this.subsegment = subsegment;
-		this.speed = speed;
-		this.deltaDisplacement = null;
+		this.speed = 10; // Calculate with unit.js
 		this.movingDirection = movingDirection;
 		this.initialized = false;
 		
@@ -36,14 +35,17 @@ class train {
 		// Load all 3D models first
 		for (let i = 0; i < this.trainCompositionInitial.length; i++) {
 			
+			// Translate provided rolling stock unit name into the corresponding mesh name
+			var meshName = units[unitNameToIndex(this.trainCompositionInitial[i][0])].mesh
+			
 			// Asynchronous asset loading function
-			const resultPromise = BABYLON.SceneLoader.ImportMeshAsync("", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/glb/", this.trainCompositionInitial[i][0] + ".glb", scene);
+			const resultPromise = BABYLON.SceneLoader.ImportMeshAsync("", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/glb/", meshName + ".glb", scene);
 			
 			// Promise of the asset loading function
 			resultPromise.then((load3D) => {
 				
 				// Declare 3D-objects
-				var hull_3D;
+				var hull_3D = [];
 				var bogies_3D = [];
 				var couplers_3D = [];
 				
@@ -57,7 +59,7 @@ class train {
 						
 						// Retrieve mesh for train hull
 						if (load3D.meshes[i].name.includes("Hull")) {
-							hull_3D = load3D.meshes[i];
+							hull_3D.push(load3D.meshes[i]);
 						}
 						
 						// Retrieve mesh for bogies
@@ -65,7 +67,7 @@ class train {
 							bogies_3D.push(load3D.meshes[i]);
 						}
 						
-						// Retrieve mesh for couplers
+						// Retrieve mesh for coupler
 						if (load3D.meshes[i].name.includes("Coupler")) {
 							couplers_3D.push(load3D.meshes[i]);
 						}
@@ -82,7 +84,7 @@ class train {
 						
 						// Retrieve mesh for train hull
 						if (load3D.meshes[i].name.includes("Hull")) {
-							hull_3D = load3D.meshes[i];
+							hull_3D.push(load3D.meshes[i]);
 						}
 						
 						// Retrieve mesh for bogies
@@ -90,7 +92,7 @@ class train {
 							bogies_3D.push(load3D.meshes[i]);
 						}
 						
-						// Retrieve mesh for couplers
+						// Retrieve mesh for coupler
 						if (load3D.meshes[i].name.includes("Coupler")) {
 							couplers_3D.push(load3D.meshes[i]);
 						}
@@ -115,6 +117,10 @@ class train {
 				this.rollingStock3DModelsInitializedCounter += 1;
 			})
 		}
+		
+		// Return max speed in composition
+		//var num = [4,5,1,3];
+		//console.log(Math.max.apply(null, num)); // logs 5
 	}
 	
 	update() {
@@ -128,20 +134,22 @@ class train {
 		if (this.initialized == false) {
 			for (let i = 0; i < this.trainCompositionInitial.length; i++) {
 				
+				// Translate provided rolling stock unit name to get the object containing all important data to describe this specific unit
+				var rollingStockDefinition = units[unitNameToIndex(this.trainCompositionInitial[i][0])];
+
 				// First model is special because here the position is provided by the user
 				if (i == 0) {
 					
 					// Convert the first track-index-position to coordinates
 					var coordinates = this.layout.layout[this.segment].curvature.getPoints()[this.subsegment];
-					this.trainComposition.push(new locomotive(coordinates, this.layout, this.segment, this.subsegment, this.movingDirection, this.deltaDisplacement, this.trainCompositionInitial[0][1], this.rollingStock3DModels[i], this.scene));
+					this.trainComposition.push(new rollingStock(coordinates, this.layout, this.segment, this.subsegment, this.movingDirection, this.trainCompositionInitial[0][1], this.rollingStock3DModels[i], this.scene));
 				
 				} else {
 					
-					var coordinatesReferenceBogie_previous = this.trainComposition[this.trainComposition.length-1].bogies[this.trainComposition[this.trainComposition.length-1].bogies.length-1].mesh.position;
-					var layout_previous = this.trainComposition[this.trainComposition.length-1].bogies[this.trainComposition[this.trainComposition.length-1].bogies.length-1].layout;
-					var segment_previous = this.trainComposition[this.trainComposition.length-1].bogies[this.trainComposition[this.trainComposition.length-1].bogies.length-1].segment;
-					var subsegment_previous = this.trainComposition[this.trainComposition.length-1].bogies[this.trainComposition[this.trainComposition.length-1].bogies.length-1].subsegment;
-					var movingDirection_previous = this.trainComposition[this.trainComposition.length-1].bogies[this.trainComposition[this.trainComposition.length-1].bogies.length-1].movingDirection;
+					var coordinatesReferenceBogie_previous = this.trainComposition[this.trainComposition.length-1].bogies.object[[this.trainComposition[this.trainComposition.length-1].bogies.object.length-1]].mesh.position;
+					var layout_previous = this.trainComposition[this.trainComposition.length-1].bogies.object[[this.trainComposition[this.trainComposition.length-1].bogies.object.length-1]].layout;
+					var segment_previous = this.trainComposition[this.trainComposition.length-1].bogies.object[[this.trainComposition[this.trainComposition.length-1].bogies.object.length-1]].segment;
+					var subsegment_previous = this.trainComposition[this.trainComposition.length-1].bogies.object[[this.trainComposition[this.trainComposition.length-1].bogies.object.length-1]].subsegment;
 	
 					// Furthest point away of center first locomotive
 					var first_coupler;
@@ -152,7 +160,7 @@ class train {
 					}
 					
 					// Position back bogie of first locomotive
-					var first_bogie = this.trainComposition[i-1].posBogieBack_init; //OK
+					var first_bogie = this.trainComposition[i-1].bogies.posInitBack;
 					
 					// Furthest point away of center second locomotive (Maximum because mirrored)
 					var second_coupler;
@@ -163,7 +171,7 @@ class train {
 					}
 					
 					// Position front bogie of second locomotive
-					var second_bogie = this.trainComposition[i-1].posBogieFront_init; //OK
+					var second_bogie = this.trainComposition[i-1].bogies.posInitFront;
 					
 					// Distance to the first bogie of the next locomotive
 					var distanceToNext = BABYLON.Vector3.Distance(first_coupler, first_bogie) + BABYLON.Vector3.Distance(second_coupler, second_bogie);
@@ -174,9 +182,9 @@ class train {
 					}
 					
 					// NEXT BUILD FUNCTION TO GET DISTANCE BETWEEN UNITS, now for debug set to 0.65
-					var result = getPosNextBogie(coordinatesReferenceBogie_previous, layout_previous, segment_previous, subsegment_previous, movingDirection_previous, distanceToNext, scene);
+					var result = getPosNextBogie(coordinatesReferenceBogie_previous, layout_previous, segment_previous, subsegment_previous, this.movingDirection, distanceToNext, scene);
 					
-					this.trainComposition.push(new locomotive(result[0], this.layout, result[1], result[2], this.movingDirection, this.deltaDisplacement, this.trainCompositionInitial[this.trainComposition.length][1], this.rollingStock3DModels[i], scene))
+					this.trainComposition.push(new rollingStock(result[0], this.layout, result[1], result[2], this.movingDirection, this.trainCompositionInitial[this.trainComposition.length][1], this.rollingStock3DModels[i], scene))
 				
 				}
 			}
@@ -218,7 +226,7 @@ class train {
 		}
 		
 		// Set displacement in relation to speed and render time so that speed is always the same no matter the fps.
-		this.deltaDisplacement = speedToDistance(this.speed, frametime); 
+		var deltaDisplacement = speedToDistance(this.speed, frametime); 
 		
 		previousFrameTime = frametime; // Set previous frame in cases the current one can't be used
 		
@@ -227,22 +235,21 @@ class train {
 			
 			// Before calling move() update the coupler positions of the previous and next unit			
 			if (i == 0 && i == this.trainComposition.length - 1) {
-				this.trainComposition[i].posCouplerBackPreviousUnit = null;
-				this.trainComposition[i].posCouplerFrontNextUnit = null;
+				this.trainComposition[i].coupler.front.posNextUnit = null;
+				this.trainComposition[i].coupler.back.posNextUnit = null;
 			} else if (i == 0) {
-				this.trainComposition[i].posCouplerBackPreviousUnit = null;
-				this.trainComposition[i].posCouplerFrontNextUnit = this.trainComposition[i+1].couplers_3D[0].position;
+				this.trainComposition[i].coupler.front.posNextUnit = null;
+				this.trainComposition[i].coupler.back.posNextUnit = this.trainComposition[i+1].coupler.front.mesh.position;
 			}else if (i == this.trainComposition.length -1) {
-				this.trainComposition[i].posCouplerBackPreviousUnit = this.trainComposition[i-1].couplers_3D[1].position;
-				this.trainComposition[i].posCouplerFrontNextUnit = null;
+				this.trainComposition[i].coupler.front.posNextUnit = this.trainComposition[i-1].coupler.back.mesh.position;
+				this.trainComposition[i].coupler.back.posNextUnit = null;
 			} else {
-				this.trainComposition[i].posCouplerBackPreviousUnit = this.trainComposition[i-1].couplers_3D[1].position;
-				this.trainComposition[i].posCouplerFrontNextUnit = this.trainComposition[i+1].couplers_3D[0].position;
+				this.trainComposition[i].coupler.front.posNextUnit = this.trainComposition[i-1].coupler.back.mesh.position;
+				this.trainComposition[i].coupler.back.posNextUnit = this.trainComposition[i+1].coupler.front.mesh.position;
 			}
 			
 			// Move train composition
-			this.trainComposition[i].deltaDisplacement = this.deltaDisplacement;
-			this.trainComposition[i].move();
+			this.trainComposition[i].move(deltaDisplacement);
 		}
 	}
 }
