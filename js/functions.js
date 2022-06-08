@@ -205,11 +205,11 @@ function idToIndex(compositions, meshIdentification) {
 	for (let cIndex = 0; cIndex < compositions.length; cIndex++) {
 		
 		// Loop over every rolling stock unit in this specific composition
-		for (let rsIndex = 0; rsIndex < compositions[cIndex].trainComposition.length; rsIndex++) {
+		for (let rsIndex = 0; rsIndex < compositions[cIndex].composition.length; rsIndex++) {
 			
 			// Loop over every sub mesh of this specific rolling stock unit
-			for (let sbIndex = 0; sbIndex < compositions[cIndex].trainComposition[rsIndex].general.id.length; sbIndex++) {
-				if (compositions[cIndex].trainComposition[rsIndex].general.id[sbIndex] == meshIdentification) {
+			for (let sbIndex = 0; sbIndex < compositions[cIndex].composition[rsIndex].configuration.id.length; sbIndex++) {
+				if (compositions[cIndex].composition[rsIndex].configuration.id[sbIndex] == meshIdentification) {
 					return [cIndex, rsIndex, sbIndex];
 				}
 			}
@@ -232,4 +232,9 @@ function unitNameToIndex (match) {
 	}
 	
 	return -1;
+}
+
+// Check if provided variable does not exists
+function check (variable, name, type) {
+	if (variable === undefined) {throw("You forget to set '" + name + "' for rolling stock type '" + type + "' in 'units.js'")} // Throw error if not defined
 }

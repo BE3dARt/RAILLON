@@ -6,7 +6,8 @@ var units = [
 		type: "Diesel",
 		mesh: "Locomotive_USA_Testbed",
 		maxvelocity: 30,
-		mass: 110
+		mass: 110,
+		traction: 50,
 	},
 	
 	// USA Wagon
@@ -15,7 +16,7 @@ var units = [
 		type: "Flatcar",
 		mesh: "",
 		maxvelocity: 30,
-		mass: 6
+		mass: 6,
 	},
 ];
 

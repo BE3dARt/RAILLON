@@ -1,18 +1,130 @@
+class Diesel {
+	
+	constructor(traction) {
+		this.traction = traction;
+	}
+	
+}
+
+class Electric {
+	
+	constructor() {
+		
+	}
+	
+}
+
+class Multiple_Unit {
+	
+	constructor() {
+		
+	}
+	
+}
+
+class Steam {
+	
+	constructor() {
+		
+	}
+	
+}
+
+class Flatcar {
+	
+	constructor() {
+		
+	}
+	
+}
+
+class Covered {
+	
+	constructor() {
+		
+	}
+	
+}
+
+class Container {
+	
+	constructor() {
+		
+	}
+	
+}
+
+class Hopper {
+	
+	constructor() {
+		
+	}
+	
+}
+
+class Tank {
+	
+	constructor() {
+		
+	}
+	
+}
+
+class Schnabel {
+	
+	constructor() {
+		
+	}
+	
+}
+
+class Passenger {
+	
+	constructor() {
+		
+	}
+	
+}
+
+class Gun {
+	
+	constructor() {
+		
+	}
+	
+}
+
 class rollingStock {
 	
-	constructor(coordinates, layout, segment, subsegment, direction, facing, rollingStock3D, scene) {
+	constructor(coordinates, layout, segment, subsegment, direction, facing, rollingStock3D, name, scene) {
+
+		// Fill in unit configuration from 'units.js' and add a couple of important things.
+		var unitsTemp = units[unitNameToIndex(name)]; // Deep copy ('units.js' therefore can't be nested!)
+		
+		// Dependent on the type, assign a differnt object to 'this.configuration' with special attributes and functions
+		if (unitsTemp.type == "Diesel") {
+			check(unitsTemp.traction, "traction", unitsTemp.type);
+			this.configuration = new Diesel(unitsTemp.traction);
+		}
+		
+		// Add stuff to every configuration
+		check(unitsTemp.maxvelocity, "maxvelocity", unitsTemp.type);
+		check(unitsTemp.mass, "mass", unitsTemp.type);
+		this.configuration.maxvelocity = unitsTemp.maxvelocity;
+		this.configuration.mass = unitsTemp.mass;
+		this.configuration.id = this.collectMeshIds(rollingStock3D);
+		
+		// Add some important stuff to the rolling stock root
+		this.name = unitsTemp.name;
+		this.type = unitsTemp.type;
 		
 		// Every significant variable for the unit's MOVEMENT
 		this.movement = {
+			velocity: null,	// Not defined
 			direction: direction,
 			facing: facing,
 		};
 		
-		// Every significant general variable
-		this.general = {
-			id : this.collectMeshIds(rollingStock3D),
-		};
-
 		// Every significant variable for HULL
 		this.hull = {
 			mesh: rollingStock3D[0][0],
@@ -20,40 +132,43 @@ class rollingStock {
 		
 		// Every significant variable for BOGIES
 		this.bogies = {
-			mesh: rollingStock3D[1],
-			object: null, // Will be initialized further down
-			
-			// Position before being moved for the first time
-			posInitFront: rollingStock3D[1][0].position, 
-			posInitBack: rollingStock3D[1][rollingStock3D[1].length-1].position,
+			front: null,
+			middle: null,
+			back: null,
 		};
-		this.bogies.object = this.setupBogies(coordinates, layout, segment, subsegment);
+		
+		// Fill if rolling stock has 2 bogies, else it has 3 bogies
+		if (rollingStock3D[1].length == 2) {
+			[this.bogies.front, this.bogies.back] = this.setupBogies(coordinates, layout, segment, subsegment, rollingStock3D[1], rollingStock3D[1][0].position);
+		} else {
+			[this.bogies.front, this.middle, this.bogies.back] = this.setupBogies(coordinates, layout, segment, subsegment, rollingStock3D[1][0].position);
+		}
 		
 		// Every significant variable for COUPLERS
 		this.coupler = {
 			front: {
 				mesh: rollingStock3D[2][0], 
 				posNextUnit: null, // Position of coupler of next unit
-				disInitToFrontBogie: BABYLON.Vector3.Distance(new BABYLON.Vector3(rollingStock3D[2][0].position.x, 0, 0), this.bogies.posInitFront)
+				disInitToFrontBogie: BABYLON.Vector3.Distance(new BABYLON.Vector3(rollingStock3D[2][0].position.x, 0, 0), this.bogies.front.posInitial)
 			},
 			
 			back: {
 				mesh: rollingStock3D[2][1], 
 				posNextUnit: null, // Position of coupler of next unit
-				disInitToBackBogie: BABYLON.Vector3.Distance(new BABYLON.Vector3(rollingStock3D[2][1].position.x, 0, 0), this.bogies.posInitBack)
+				disInitToBackBogie: BABYLON.Vector3.Distance(new BABYLON.Vector3(rollingStock3D[2][1].position.x, 0, 0), this.bogies.back.posInitial)
 			},
 		};
 	}
 	
 	// Bogie setup
-	setupBogies (coordinates, layout, segment, subsegment) {
+	setupBogies (coordinates, layout, segment, subsegment, mesh, posInitial) {
 		
-		var arrBogies = [new bogie(coordinates, layout, segment, subsegment, this.bogies.mesh[0])]; // Initialize first bogie
+		var arrBogies = [new bogie(coordinates, layout, segment, subsegment, mesh[0])]; // Initialize first bogie
 			
 		// Initialize every other bogie (Start with 3 because 0th is 'root', 1st 'hull' and 2nd 'bogie 1')
-		for (let i = 1; i < this.bogies.mesh.length; i++) {
+		for (let i = 1; i < mesh.length; i++) {
 			
-			var distanceVec = BABYLON.Vector3.Distance(this.bogies.posInitFront, this.bogies.mesh[i].position);
+			var distanceVec = BABYLON.Vector3.Distance(posInitial, mesh[i].position);
 			// Firstly we need to calculate the distance to the first bogie.
 			
 			// Debug distance between bogies of rolling stock unit.
@@ -61,12 +176,11 @@ class rollingStock {
 				console.log(distanceVec);
 			}
 			
-			
 			// Plug it into the function which will determine the bogie's position along the track.
-			var result = getPosNextBogie(this.bogies.mesh[arrBogies.length-1].position, layout, segment, subsegment, this.movement.direction, distanceVec, scene)
+			var result = getPosNextBogie(mesh[arrBogies.length-1].position, layout, segment, subsegment, this.movement.direction, distanceVec, scene)
 			
 			// Initialize every other bogie
-			arrBogies.push(new bogie(result[0], layout, result[1], result[2], this.bogies.mesh[i]));
+			arrBogies.push(new bogie(result[0], layout, result[1], result[2], mesh[i]));
 		}
 		
 		return arrBogies;
@@ -86,19 +200,29 @@ class rollingStock {
 	// Move hull and all bogies
 	move(deltaDisplacement) {
 		
-		// Move the bogies
-		for (let i = 0; i < this.bogies.object.length; i++) {
-			this.bogies.object[i].move(deltaDisplacement, this.movement.direction, this.movement.facing);
+		// Move front bogie
+		if (this.bogies.front != null) {
+			this.bogies.front.move(deltaDisplacement, this.movement.direction, this.movement.facing);
+		}
+		
+		// Move middle bogie
+		if (this.bogies.middle != null) {
+			this.bogies.middle.move(deltaDisplacement, this.movement.direction, this.movement.facing);
+		}
+		
+		// Move back bogie
+		if (this.bogies.back != null) {
+			this.bogies.back.move(deltaDisplacement, this.movement.direction, this.movement.facing);
 		}
 		
 		// Debug distance between bogies of rolling stock unit.
 		if (activeDebug == true) {
-			console.log(BABYLON.Vector3.Distance(this.bogies.object[0].mesh.position, this.bogies.object[this.bogies.object.length-1].mesh.position));
+			console.log(BABYLON.Vector3.Distance(this.bogies.front.mesh.position, this.bogies.back.mesh.position));
 		}
 		
 		// Move the hull
-		var posFirstBogie = this.bogies.object[0].mesh.position;
-		var posLastBogie = this.bogies.object[this.bogies.object.length-1].mesh.position;
+		var posFirstBogie = this.bogies.front.mesh.position;
+		var posLastBogie = this.bogies.back.mesh.position;
 		
 		// Direction Vector
 		var dirVec = new BABYLON.Vector3((posLastBogie.x - posFirstBogie.x) / 2, (posLastBogie.y - posFirstBogie.y) / 2, (posLastBogie.z - posFirstBogie.z) / 2);

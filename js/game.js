@@ -11,7 +11,7 @@ window.addEventListener("focus", function(event) {
 	
 	// Let compositions move again
 	for (let i = 0; i < compositions.length; i++) {
-		compositions[i].status = 1;
+		compositions[i].movement.status = 1;
 	}
 	
 	// Resume Rendering
@@ -25,7 +25,7 @@ window.addEventListener("blur", function(event) {
 	
 	// Stop compositions from moving
 	for (let i = 0; i < compositions.length; i++) {
-		compositions[i].status = 0;
+		compositions[i].movement.status = 0;
 	}
 	
 	// Stop Rendering
@@ -126,7 +126,7 @@ var createScene = function () {
 				
 				var index = idToIndex(compositions, pickResult.pickedMesh.uniqueId);
 				if (index != null) {
-					console.log(index)
+					console.log(compositions[index[0]].composition[index[1]]) // Return definition of before clicked rolling stock unit
 				}
 			}
 		}

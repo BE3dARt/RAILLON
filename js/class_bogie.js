@@ -2,6 +2,9 @@ class bogie {
 	
 	constructor(coordinates, layout, segment, subsegment, mesh) {
 		
+		// Initial Position
+		this.posInitial = mesh.position;
+		
 		// Mesh
 		this.mesh = mesh;
 		this.mesh.position = coordinates;
