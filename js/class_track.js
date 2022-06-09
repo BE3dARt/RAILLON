@@ -13,8 +13,16 @@ class railswitch {
 }
 
 class track {
-	constructor(layout) {
-		this.layout = layout;
+	constructor(name) {
+        
+        // Build railway network
+        var railnetworkIndex = railwayNetworkNameToIndex(name);
+        this.network = railnetwork[railnetworkIndex];
+        for (let sectionIndex = 0; sectionIndex < this.network.rails.length; sectionIndex++) {
+            for (let segmentIndex = 0; segmentIndex < this.network.rails[sectionIndex].length; segmentIndex++) {
+                this.network.rails[sectionIndex][segmentIndex] = new railSegment(this.network.rails[sectionIndex][segmentIndex][0], this.network.rails[sectionIndex][segmentIndex][1], this.network.rails[sectionIndex][segmentIndex][2], this.network.rails[sectionIndex][segmentIndex][3]);
+            }
+        }
 	}
 	
 	// Initialize and create switches dependent on the provided layout

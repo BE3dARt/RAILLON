@@ -76,7 +76,7 @@ var createScene = function () {
 	
 	// Display Ground
 	map = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
-	map.scaling = new BABYLON.Vector3(20, 0.1, 10);
+	map.scaling = new BABYLON.Vector3(21, 0.1, 11);
 	map.position = new BABYLON.Vector3(0, -0.08, 0);
 	map.material = mat1;
 	
@@ -88,34 +88,11 @@ var createScene = function () {
 	// Initialzise FPS display
 	let divFps = document.getElementById("fps");
 	
-	// Track layout (Length 21)
-	layout1Segments  = [
-		new railSegment([-6.5, 0, -4.5], 180, [-9, 0, -2], 90),
-		new railSegment([-9, 0, -2], 90, [-9, 0, -1], 90),
-		new railSegment([-9, 0, -1], 90, [-4, 0, 4], 0),
-		new railSegment([-4, 0, 4], 0, [7, 0, 4], 0),
-		new railSegment([7, 0, 4], 0, [8.5, 0, 3], 270),
-		new railSegment([8.5, 0, 3], 270, [8.5, 0, 1], 270),
-		new railSegment([8.5, 0, 1], 270, [7, 0, -0.5], 180),
-		new railSegment([7, 0, -0.5], 180, [5, 0, -0.5], 180),
-		new railSegment([5, 0, -0.5], 180, [1, 0, 1.5], 180),
-		new railSegment([1, 0, 1.5], 180, [-1, 0, 1.5], 180),
-		new railSegment([-1, 0, 1.5], 180, [-3, 0, 0.5], 225),
-		new railSegment([-3, 0, 0.5], 225, [-4, 0, -0.5], 225),
-		new railSegment([-4, 0, -0.5], 225, [-5, 0, -2.5], 270),
-		new railSegment([-5, 0, -2.5], 270, [-3.5, 0, -4], 0),
-		new railSegment([-3.5, 0, -4], 0, [1, 0, -4], 0),
-		new railSegment([1, 0, -4], 0, [2.5, 0, -2.5], 90),
-		new railSegment([2.5, 0, -2.5], 90, [4, 0, -1], 0),
-		new railSegment([4, 0, -1], 0, [7, 0, -1], 0),
-		new railSegment([7, 0, -1], 0, [8.5, 0, -2.5], 270),
-		new railSegment([8.5, 0, -2.5], 270, [7, 0, -4.5], 180),
-		new railSegment([7, 0, -4.5], 180, [-6.5, 0, -4.5], 180),
-	];
-	layout1 = new track(layout1Segments);
+    // Define new track
+	layout1 = new track("Default");
 	
 	// Create new train (Current bugs: Subsegement = 0 (both))
-	compositions.push(new train([["Diesel_Locomotive_USA", true], ["Diesel_Locomotive_USA", false], ["Diesel_Locomotive_USA", false]], layout1, 2, 30, true, scene));
+	compositions.push(new train([["Diesel_Locomotive_USA", true], ["Diesel_Locomotive_USA", false], ["Diesel_Locomotive_USA", false]], layout1, 0, 2, 10, true, scene));
 
 	// Event on mesh-click
     scene.onPointerPick = function (evt, pickResult) {
