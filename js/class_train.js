@@ -17,10 +17,14 @@ class train {
 		
 		// Every significant variable for the train's MOVEMENT
 		this.movement = {
-			speed: 10, 				// Calculate with 'unit.js'
+			velocity: null, 				// Calculate with 'unit.js'
 			direction: direction,
 			status: 1, 				// 0: stop, 1: drive
 		};
+		
+		this.configuration = {
+			maxvelocity: null,
+		}
 		
 		// Check if provided segment exists
 		if (this.segment < 0) {
@@ -121,10 +125,6 @@ class train {
 				this.rollingStock3DModelsInitializedCounter += 1;
 			})
 		}
-		
-		// Return max speed in composition
-		//var num = [4,5,1,3];
-		//console.log(Math.max.apply(null, num)); // logs 5
 	}
 	
 	update() {
@@ -201,6 +201,14 @@ class train {
 			delete this.rollingStock3DModels;
 			delete this.rollingStock3DModelsInitializedCounter;
 			
+			// Calculate max velocity for whole train based on max velocity of each rolling stock
+			var arrMaxVelocity = [];
+			for (let i = 0; i < this.composition.length; i++) {
+				arrMaxVelocity.push(this.composition[i].configuration.maxvelocity);
+			}
+			this.configuration.maxvelocity = Math.min.apply(null, arrMaxVelocity);
+			this.movement.velocity = Math.min.apply(null, arrMaxVelocity);
+			
 			// Initialisation of all units successfully finished
 			this.initialized = true;
 		}
@@ -238,7 +246,7 @@ class train {
 		}
 		
 		// Set displacement in relation to speed and render time so that speed is always the same no matter the fps.
-		var deltaDisplacement = speedToDistance(this.movement.speed, frametime); 
+		var deltaDisplacement = speedToDistance(this.movement.velocity, frametime); 
 		
 		previousFrameTime = frametime; // Set previous frame in cases the current one can't be used
 		

@@ -1,29 +1,55 @@
+class railswitch {
+	constructor() {
+		
+		// Start Node
+		this.start = {
+			position: null,
+			index: null,
+		};
+		
+		// End Node 
+		this.end = [{position: null, index: null}, {position: null, index: null}];
+	}
+}
+
+class track {
+	constructor(layout) {
+		this.layout = layout;
+	}
+	
+	// Initialize and create switches dependent on the provided layout
+	createSwitch() {
+		
+	}
+}
+
 class railSegment {
 	constructor(ptStart, dirStart, ptEnd, dirEnd) {
         
-        this.curveModifier = 1; // Adjust how wide the cureves will be
+        this.modifier = 1; // Adjust how wide the cureves will be
+		this.switch = null;
 		
 		// Mirror angle of end joint and adjust for 360°
         dirEnd = dirEnd + 180
         if (dirEnd >= 360) {dirEnd -= 360}
         
 		// Start and end points of curve
-		this.curveStart = new BABYLON.Vector3(ptStart[0], ptStart[1], ptStart[2]);
-		this.curveEnd = new BABYLON.Vector3(ptEnd[0], ptEnd[1], ptEnd[2]);
+		var posStart = new BABYLON.Vector3(ptStart[0], ptStart[1], ptStart[2]);
+		var posEnd = new BABYLON.Vector3(ptEnd[0], ptEnd[1], ptEnd[2]);
 		
 		// Take curve length into consideration when deciding how wide the curve should be
-		this.curveModifier = this.curveModifier * (BABYLON.Vector3.Distance(this.curveStart, this.curveEnd) / 2);
+		var segmentModifier = this.modifier * (BABYLON.Vector3.Distance(posStart, posEnd) / 2);
 		
 		// Curve control points (define how wide the curve is)
-		this.curveStartControl = new BABYLON.Vector3(ptStart[0] + (angleTo2DVector(dirStart, 5)[0] * this.curveModifier), 0, ptStart[2] + (angleTo2DVector(dirStart, 5)[1] * this.curveModifier));
-		this.curveEndControl = new BABYLON.Vector3(ptEnd[0] + (angleTo2DVector(dirEnd, 5)[0] * this.curveModifier), 0, ptEnd[2] + (angleTo2DVector(dirEnd, 5)[1] * this.curveModifier));
+		var posControlStart = new BABYLON.Vector3(ptStart[0] + (angleTo2DVector(dirStart, 5)[0] * segmentModifier), 0, ptStart[2] + (angleTo2DVector(dirStart, 5)[1] * segmentModifier));
+		var posControlEnd = new BABYLON.Vector3(ptEnd[0] + (angleTo2DVector(dirEnd, 5)[0] * segmentModifier), 0, ptEnd[2] + (angleTo2DVector(dirEnd, 5)[1] * segmentModifier));
 		
 		// Calculate how many points are needed (dependent on length)
-        this.curvature = BABYLON.Curve3.CreateCubicBezier(this.curveStart, this.curveStartControl, this.curveEndControl, this.curveEnd, 20);
-		this.curvePointNumber = Math.round(this.curvature.length() * curveSmoothness );
+        this.curvature = BABYLON.Curve3.CreateCubicBezier(posStart, posControlStart, posControlEnd, posEnd, 20);
+		var numNodes = Math.round(this.curvature.length() * curveSmoothness );
 		
 		// Execute curve
-		this.curvature = BABYLON.Curve3.CreateCubicBezier(this.curveStart, this.curveStartControl, this.curveEndControl, this.curveEnd, this.curvePointNumber);
+		this.curvature = BABYLON.Curve3.CreateCubicBezier(posStart, posControlStart, posControlEnd, posEnd, numNodes);
 		
 		// Display tracks in 3D.
 		BABYLON.Mesh.CreateLines("hermite", this.buildTrack(this.curvature.getPoints(), 1.435, true), scene);
@@ -32,16 +58,16 @@ class railSegment {
 		// 3D Boxes to debug curve
 		if (activeDebug == true) {
 			this.Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
-			this.Debug.position = this.curveStartControl;
+			this.Debug.position = posControlStart;
 			this.Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
 			this.Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
-			this.Debug.position = this.curveEndControl;
+			this.Debug.position = posControlEnd;
 			this.Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
 			this.Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
-			this.Debug.position = this.curveStart;
+			this.Debug.position = posStart;
 			this.Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
 			this.Debug = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
-			this.Debug.position = this.curveEnd;
+			this.Debug.position = posEnd;
 			this.Debug.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
 		}
 	}
@@ -74,11 +100,5 @@ class railSegment {
 			rails.push(curve[p].add(track[p]))
 		}
 		return rails;
-	}
-}
-
-class track {
-	constructor(layout) {
-		this.layout = layout;
 	}
 }
