@@ -1,11 +1,11 @@
 class train {
 	
 	// compositionInitial: [["Name", heading]]
-	constructor(compositionInitial, track, section, segment, subsegment, direction, scene) {
+	constructor(compositionInitial, map, section, segment, subsegment, direction, scene) {
 		
 		// The folowing variables are only used for initialisation and are deleted afterwards
 		this.compositionInitial = compositionInitial;
-		this.track = track;
+		this.map = map;
         this.section = section;
 		this.segment = segment;
 		this.subsegment = subsegment;
@@ -30,15 +30,15 @@ class train {
 		// Check if provided segment exists
 		if (this.segment < 0) {
 			this.segment = 0;
-		} else if (segment >= this.track.network.rails[this.section].length) {
-			this.segment = this.track.network.rails[this.section].length - 1;
+		} else if (segment >= this.map.railnetwork[this.section].length) {
+			this.segment = this.map.railnetwork[this.section].length - 1;
 		}
         
 		// Check if provided subsegment exists
 		if (this.subsegment < 0) {
 			this.subsegment = 0;
-		} else if (this.subsegment >= this.track.network.rails[this.section][this.segment].curvature.getPoints().length) {
-			this.subsegment = this.track.network.rails[this.section][this.segment].curvature.getPoints().length - 1;
+		} else if (this.subsegment >= this.map.railnetwork[this.section][this.segment].rails.curvature.getPoints().length) {
+			this.subsegment = this.map.railnetwork[this.section][this.segment].rails.curvature.getPoints().length - 1;
 		}
 		
 		// Load all 3D models first
@@ -143,15 +143,15 @@ class train {
 				// First model is special because here the position is provided by the user
 				if (i == 0) {
 					
-					// Convert the first track-index-position to coordinates
-					var coordinates = this.track.network.rails[this.section][this.segment].curvature.getPoints()[this.subsegment];
-					this.composition.push(new rollingStock(coordinates, this.track, this.section, this.segment, this.subsegment, this.movement.direction, this.compositionInitial[0][1], this.rollingStock3DModels[i], this.compositionInitial[i][0], this.scene));
+					// Convert the first railway-railnetwork-index-position to coordinates
+					var coordinates = this.map.railnetwork[this.section][this.segment].rails.curvature.getPoints()[this.subsegment];
+					this.composition.push(new rollingStock(coordinates, this.map, this.section, this.segment, this.subsegment, this.movement.direction, this.compositionInitial[0][1], this.rollingStock3DModels[i], this.compositionInitial[i][0], this.scene));
 					
 				} else {
 					
 					// Back Bogie of previous unit
 					var coordinatesReferenceBogie_previous = this.composition[this.composition.length-1].bogies.back.mesh.position;
-					var layout_previous = this.composition[this.composition.length-1].bogies.back.track;
+					var layout_previous = this.composition[this.composition.length-1].bogies.back.map;
                     var section_previous = this.composition[this.composition.length-1].bogies.back.section;
 					var segment_previous = this.composition[this.composition.length-1].bogies.back.segment;
 					var subsegment_previous = this.composition[this.composition.length-1].bogies.back.subsegment;
@@ -189,7 +189,7 @@ class train {
 					// NEXT BUILD FUNCTION TO GET DISTANCE BETWEEN UNITS, now for debug set to 0.65
 					var result = getPosNextBogie(coordinatesReferenceBogie_previous, layout_previous, section_previous, segment_previous, subsegment_previous, this.movement.direction, distanceToNext, scene);
 					
-					this.composition.push(new rollingStock(result[0], this.track, result[1], result[2], result[3], this.movement.direction, this.compositionInitial[this.composition.length][1], this.rollingStock3DModels[i], this.compositionInitial[i][0], scene))
+					this.composition.push(new rollingStock(result[0], this.map, result[1], result[2], result[3], this.movement.direction, this.compositionInitial[this.composition.length][1], this.rollingStock3DModels[i], this.compositionInitial[i][0], scene))
 				
 				}
 			}
@@ -197,7 +197,7 @@ class train {
 			// delete unused variables
 			delete this.segment;
 			delete this.compositionInitial;
-			delete this.track;
+			delete this.map;
 			delete this.segment;
 			delete this.subsegment;
 			delete this.rollingStock3DModels;

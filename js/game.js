@@ -88,11 +88,11 @@ var createScene = function () {
 	// Initialzise FPS display
 	let divFps = document.getElementById("fps");
 	
-    // Define new track
-	layout1 = new track("Default");
+    // Define new map
+	layout1 = new Map("Default", scene);
 	
 	// Create new train (Current bugs: Subsegement = 0 (both))
-	compositions.push(new train([["Diesel_Locomotive_USA", true], ["Diesel_Locomotive_USA", false], ["Diesel_Locomotive_USA", false]], layout1, 0, 2, 10, true, scene));
+	compositions.push(new train([["Diesel_Locomotive_USA", true], ["Diesel_Locomotive_USA", false], ["Diesel_Locomotive_USA", false]], layout1, 0, 2, 10, false, scene));
 
 	// Event on mesh-click
     scene.onPointerPick = function (evt, pickResult) {
@@ -101,9 +101,18 @@ var createScene = function () {
 		if (evt.button == 0) {
 			if (pickResult.hit) {
 				
+				// Rolling Stock Units
 				var index = idToIndex(compositions, pickResult.pickedMesh.uniqueId);
 				if (index != null) {
 					console.log(compositions[index[0]].composition[index[1]]) // Return definition of before clicked rolling stock unit
+					return;
+				}
+				
+				// Railway Switches
+				index = switchMeshToIndex(pickResult.pickedMesh.uniqueId)
+				if (index != null) {
+					switches[index].direction = !switches[index].direction;
+					return;
 				}
 			}
 		}

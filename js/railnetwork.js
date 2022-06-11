@@ -1,5 +1,5 @@
 // Right: 0, Up: 90, Left: 180, Down: 270
-var railnetwork = [
+var railwayNetworkConfiguration = [
     
     {
         name: "Default",
@@ -19,7 +19,13 @@ var railnetwork = [
             // 2nd Section
             [
                 [[-5, 0, 5], 0, [0, 0, 0], 270],
-                [[0, 0, 0], 270, [5, 0, -5], 0],
+                [[0, 0, 0], 270, [-5, 0, -5], 180],
+            ],
+			
+			// 3rd Section
+            [
+                [[0, 0, 5], 0, [5, 0, 0], 270],
+                [[5, 0, 0], 270, [0, 0, -5], 180],
             ]
         ]
     },
@@ -30,3 +36,5 @@ var railnetwork = [
     }
     
 ]
+
+// If coordinates are the same but angle is opposite, change moving direction!

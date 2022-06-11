@@ -12,44 +12,58 @@ function angleTo2DVector (angle, precision) {
 	return [Math.round(x) / Math.pow(10, precision), Math.round(y) / Math.pow(10, precision)];
 }
 
-// Track layout is devided into segments. If out of bounds, set index to next segement.
-function verifyIndex (moveDir, track, section, segment, subsegment) {
+function verifyIndex (moveDir, map, section, segment, subsegment) {
 
-	// Distinguish between forwards and backwards
+	var sectionInit = section;
+	var segmentInit = segment;
+	
+	// Number of interpolation points in a segment
+	var nbPointsOfSegment = map.railnetwork[sectionInit][segmentInit].rails.curvature.getPoints().length;
+
+	// Fowards (move from 'start' to 'end')
 	if (moveDir == true) {
 		
-		// Prevent it from going out of bounds
-		if (subsegment != track.network.rails[section][segment].curvature.getPoints().length - 1) {
-			subsegment += 1;
-		}
-		
-		// Check if segment is finished
-		if (subsegment == track.network.rails[section][segment].curvature.getPoints().length - 1) {
-			segment += 1;
-			subsegment = 1; // I believe it gives error when last point of previous segement is the same as 0th index of current segment. So we target the first index instead.
-		
-			// Check if track is finished
-			if (segment == track.network.rails[section].length) {
-				segment = 0;
+		if (subsegment == 1) {
+			if (map.railnetwork[sectionInit][segmentInit].switch.object != null && map.railnetwork[sectionInit][segmentInit].switch.start.length >= 2) {
+				console.log("Change switch!");
 			}
-            
 		}
+		
+		// Increse subsegment index (interpolation in a segment) and simultaneously prevent it from going over the segment length
+		if (subsegment != nbPointsOfSegment - 1) {subsegment += 1}
+		
+		// Check if 'end' of segment has been reached
+		if (subsegment == nbPointsOfSegment - 1) {
+			
+			// At this switch the direction must actively be decided
+			if (map.railnetwork[sectionInit][segmentInit].switch.object != null && map.railnetwork[sectionInit][segmentInit].switch.start.length == 1) {
+				console.log(map.railnetwork[sectionInit][segmentInit]);
+				[section, segment] = map.railnetwork[sectionInit][segmentInit].switch.object.getDestination();
+			} else {
+				section = map.railnetwork[sectionInit][segmentInit].switch.end[0].section;
+				segment = map.railnetwork[sectionInit][segmentInit].switch.end[0].segment;
+			}
+			subsegment = 1;
+		}
+		
+	// Backwards (move from 'end' to 'start')
 	} else {
 		
-		// Prevent it from going to -1
-		if (subsegment != 0) {
-			subsegment -= 1;
-		}
+		// Decrease subsegment index (interpolation in a segment) and simultaneously prevent it from going -1
+		if (subsegment != 0) {subsegment -= 1}
 		
-		// If segment is at start move it to the end
+		// Check if 'start' of segment has been reached
 		if (subsegment == 0) {
-			if (segment == 0) {
-				segment = track.network.rails[section].length - 1;
+			
+			// At this switch the direction must actively be decided
+			if (map.railnetwork[sectionInit][segmentInit].switch.object != null && map.railnetwork[sectionInit][segmentInit].switch.end.length == 1) {
+				[section, segment] = map.railnetwork[sectionInit][segmentInit].switch.object.getDestination();
 			} else {
-				segment -= 1;
+				section = map.railnetwork[sectionInit][segmentInit].switch.start[0].section;
+				segment = map.railnetwork[sectionInit][segmentInit].switch.start[0].segment;
 			}
 			
-			subsegment = track.network.rails[section][segment].curvature.getPoints().length - 2; // Stupid error with -1: In some rare cases the last index of the previous segment was equal to the 0th of the new one. 'intersection' would not work
+			subsegment = map.railnetwork[section][segment].rails.curvature.getPoints().length - 2;
 		}
 	}
 	
@@ -57,9 +71,9 @@ function verifyIndex (moveDir, track, section, segment, subsegment) {
 }
 
 // I might regret it but I need to test it ... 
-function getPosNextBogie(coordinatesReferenceBogie, track, section, segment, subsegment, movingDirection, distance, scene) {
-    
-	var ptPrevious = track.network.rails[section][segment].curvature.getPoints()[subsegment];
+function getPosNextBogie(coordinatesReferenceBogie, map, section, segment, subsegment, movingDirection, distance, scene) {
+	
+	var ptPrevious = map.railnetwork[section][segment].rails.curvature.getPoints()[subsegment];
 	var indexPrevious = [segment, subsegment];
 	var ptNext;
 	
@@ -68,13 +82,13 @@ function getPosNextBogie(coordinatesReferenceBogie, track, section, segment, sub
 	while (true) {
 		
 		// Verify if index is still correct
-		var updateIndex = verifyIndex (!movingDirection, track, section, segment, subsegment);
+		var updateIndex = verifyIndex (!movingDirection, map, section, segment, subsegment);
 		section = updateIndex[0];
         segment = updateIndex[1];
 		subsegment = updateIndex[2];
         
 		// Get current pt
-		ptNext = track.network.rails[section][segment].curvature.getPoints()[subsegment];
+		ptNext = map.railnetwork[section][segment].rails.curvature.getPoints()[subsegment];
 		
 		// Calculate distance between previous and next point (pt)
 		var disBetweenPoints = BABYLON.Vector3.Distance(ptPrevious, ptNext);
@@ -146,12 +160,21 @@ function unitNameToIndex (match) {
 }
 
 function railwayNetworkNameToIndex (match) {
-	for (let i = 0; i < railnetwork.length; i++) {
-		if (railnetwork[i].name == match) {
+	for (let i = 0; i < railwayNetworkConfiguration.length; i++) {
+		if (railwayNetworkConfiguration[i].name == match) {
 			return i;
 		}
 	}
 	return -1;
+}
+
+function switchMeshToIndex (match) {
+	for (let i = 0; i < switches.length; i++) {
+		if (switches[i].boundingBox.uniqueId == match) {
+			return i;
+		}
+	}
+	return null;
 }
 
 // Check if provided variable does not exists

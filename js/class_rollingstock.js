@@ -96,7 +96,7 @@ class Gun {
 
 class rollingStock {
 	
-	constructor(coordinates, track, section, segment, subsegment, direction, facing, rollingStock3D, name, scene) {
+	constructor(coordinates, map, section, segment, subsegment, direction, facing, rollingStock3D, name, scene) {
 
 		// Fill in unit configuration from 'units.js' and add a couple of important things.
 		var unitsTemp = units[unitNameToIndex(name)]; // Deep copy ('units.js' therefore can't be nested!)
@@ -139,9 +139,9 @@ class rollingStock {
 
 		// Fill if rolling stock has 2 bogies, else it has 3 bogies
 		if (rollingStock3D[1].length == 2) {
-			[this.bogies.front, this.bogies.back] = this.setupBogies(coordinates, track, section, segment, subsegment, rollingStock3D[1], rollingStock3D[1][0].position);
+			[this.bogies.front, this.bogies.back] = this.setupBogies(coordinates, map, section, segment, subsegment, rollingStock3D[1], rollingStock3D[1][0].position);
 		} else {
-			[this.bogies.front, this.middle, this.bogies.back] = this.setupBogies(coordinates, track, section, segment, subsegment, rollingStock3D[1], rollingStock3D[1][0].position);
+			[this.bogies.front, this.middle, this.bogies.back] = this.setupBogies(coordinates, map, section, segment, subsegment, rollingStock3D[1], rollingStock3D[1][0].position);
 		}
 		
 		// Every significant variable for COUPLERS
@@ -161,9 +161,9 @@ class rollingStock {
 	}
 	
 	// Bogie setup
-	setupBogies (coordinates, track, section, segment, subsegment, mesh, posInitial) {
+	setupBogies (coordinates, map, section, segment, subsegment, mesh, posInitial) {
         
-		var arrBogies = [new bogie(coordinates, track, section, segment, subsegment, mesh[0])]; // Initialize first bogie
+		var arrBogies = [new bogie(coordinates, map, section, segment, subsegment, mesh[0])]; // Initialize first bogie
 			
 		// Initialize every other bogie (Start with 3 because 0th is 'root', 1st 'hull' and 2nd 'bogie 1')
 		for (let i = 1; i < mesh.length; i++) {
@@ -175,11 +175,11 @@ class rollingStock {
 			if (activeDebug == true) {
 				console.log(distanceVec);
 			}
-			// Plug it into the function which will determine the bogie's position along the track.
-			var result = getPosNextBogie(mesh[arrBogies.length-1].position, track, section, segment, subsegment, this.movement.direction, distanceVec, scene)
+			// Plug it into the function which will determine the bogie's position along the railway.
+			var result = getPosNextBogie(mesh[arrBogies.length-1].position, map, section, segment, subsegment, this.movement.direction, distanceVec, scene)
             
 			// Initialize every other bogie
-			arrBogies.push(new bogie(result[0], track, result[1], result[2], result[3], mesh[i]));
+			arrBogies.push(new bogie(result[0], map, result[1], result[2], result[3], mesh[i]));
 		}
 		
 		return arrBogies;
