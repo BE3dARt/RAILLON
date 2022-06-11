@@ -96,7 +96,7 @@ var createScene = function () {
 
 	// Event on mesh-click
     scene.onPointerPick = function (evt, pickResult) {
-		
+
 		// Restrict trigger to left mouse button
 		if (evt.button == 0) {
 			if (pickResult.hit) {
@@ -112,6 +112,7 @@ var createScene = function () {
 				index = switchMeshToIndex(pickResult.pickedMesh.uniqueId)
 				if (index != null) {
 					switches[index].direction = !switches[index].direction;
+					switches[index].animationRun()
 					return;
 				}
 			}

@@ -4,10 +4,11 @@ class railswitch {
 		// Direction (false: origin - direction1, true: origin - direction2)
 		this.direction = false;
 		
-		// Create mesh which can be clicked to change switch
+		// Because we can't pick bounding boxes we will just fake it
 		this.boundingBox = new BABYLON.MeshBuilder.CreateBox("box", {}, scene);
-		this.boundingBox.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+		this.boundingBox.scaling = new BABYLON.Vector3(1, 1, 1);
 		this.boundingBox.position = new BABYLON.Vector3(coordinates[0], coordinates[1], coordinates[2]);
+		this.boundingBox.visibility = 0;
 		
 		// Origin 
 		this.origin = {
@@ -29,6 +30,71 @@ class railswitch {
 				subsegment: destination[1].subsegment
 			}
 		];
+		
+		// Holds animation settings of this railway switch
+		this.animation = {
+			namespace: null,
+			keyFramesFull: null,
+			keyFramesZero: null,
+		}
+		
+		// Asynchronous asset loading function
+		const resultPromise = BABYLON.SceneLoader.ImportMeshAsync("", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/glb/", "animated_arrow.glb", scene);
+			
+		// Promise of the asset loading function
+		resultPromise.then((switch3D) => {
+			
+			// Set position of mesh to provided coordinates
+			switch3D.meshes[0].position = new BABYLON.Vector3(coordinates[0], coordinates[1], coordinates[2]);
+			
+			// Add keyframes because I can't export multiple animation takes from Cinema 4D. Therefore I added pose morphs but need to change its values now.
+			this.keyFramesFull = [];
+			this.keyFramesFull.push({frame: 0, value: 0});
+			this.keyFramesFull.push({frame: 60, value: 1});
+			
+			this.keyFramesZero = [];
+			this.keyFramesZero.push({frame: 0, value: 1});
+			this.keyFramesZero.push({frame: 60, value: 0});
+			
+			// Write to object variable
+			this.animation.namespace = switch3D.animationGroups[0];
+			
+			// Left
+			this.animation.namespace.targetedAnimations[0].animation.setKeys(this.keyFramesZero)
+			
+			// Right
+			this.animation.namespace.targetedAnimations[1].animation.setKeys(this.keyFramesFull)
+			
+			// Don't loop animation
+			this.animation.namespace.animatables[0].loopAnimation = false;
+			this.animation.namespace.animatables[1].loopAnimation = false;
+			
+		})
+	}
+	
+	// Run the animation
+	animationRun() {
+		
+		if (this.direction == false) {
+			
+			// Left
+			this.animation.namespace.targetedAnimations[0].animation.setKeys(this.keyFramesFull)
+			
+			// Right
+			this.animation.namespace.targetedAnimations[1].animation.setKeys(this.keyFramesZero)
+			
+		} else {
+			
+			// Left
+			this.animation.namespace.targetedAnimations[0].animation.setKeys(this.keyFramesZero)
+			
+			// Right
+			this.animation.namespace.targetedAnimations[1].animation.setKeys(this.keyFramesFull)
+			
+		}
+		
+		this.animation.namespace.start()
+
 	}
 	
 	// Return the next index
