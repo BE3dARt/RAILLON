@@ -6,7 +6,7 @@ class railswitch {
 		
 		// Because we can't pick bounding boxes we will just fake it
 		this.boundingBox = new BABYLON.MeshBuilder.CreateBox("box", {}, scene);
-		this.boundingBox.scaling = new BABYLON.Vector3(1, 1, 1);
+		this.boundingBox.scaling = new BABYLON.Vector3(1.5, 0.1, 1.5);
 		this.boundingBox.position = new BABYLON.Vector3(coordinates[0], coordinates[1], coordinates[2]);
 		this.boundingBox.visibility = 0;
 		
@@ -14,7 +14,8 @@ class railswitch {
 		this.origin = {
 			section: origin[0].section,
 			segment: origin[0].segment,
-			subsegment: origin[0].subsegment
+			subsegment: origin[0].subsegment,
+			direction: origin[0].direction,
 		};
 		
 		// Desitination 
@@ -22,12 +23,14 @@ class railswitch {
 			{
 				section: destination[0].section,
 				segment: destination[0].segment,
-				subsegment: destination[0].subsegment
+				subsegment: destination[0].subsegment,
+				direction: destination[0].direction,
 			}, 
 			{
 				section: destination[1].section,
 				segment: destination[1].segment,
-				subsegment: destination[1].subsegment
+				subsegment: destination[1].subsegment,
+				direction: destination[1].direction,
 			}
 		];
 		
@@ -100,9 +103,9 @@ class railswitch {
 	// Return the next index
 	getDestination() {
 		if (this.direction == false) {
-			return [this.destination[0].section, this.destination[0].segment]
+			return [this.destination[0].section, this.destination[0].segment, this.destination[0].direction]
 		} else {
-			return [this.destination[1].section, this.destination[1].segment]
+			return [this.destination[1].section, this.destination[1].segment, this.destination[1].direction]
 		}
 	}
 }
@@ -140,6 +143,7 @@ class Map {
 			this.railnetwork[sectionIndex] = arrInput;
         }
 		
+		// Display whole railway network
 		console.log(this.railnetwork);
 	}
 	
@@ -154,8 +158,10 @@ class Map {
 		for (let sectionIndex = 0; sectionIndex < network.length; sectionIndex++) {
 			for (let segmentIndex = 0; segmentIndex < network[sectionIndex].length; segmentIndex++) {
 				
+				var newAngle;
+				
 				// Forward to Backward (drive backwards)
-				if (network[section][segment][0][0] == network[sectionIndex][segmentIndex][2][0] && network[section][segment][0][1] == network[sectionIndex][segmentIndex][2][1] && network[section][segment][0][2] == network[sectionIndex][segmentIndex][2][2] && !(segment == segmentIndex && section == sectionIndex)) {
+				if (network[section][segment][0][0] == network[sectionIndex][segmentIndex][2][0] && network[section][segment][0][1] == network[sectionIndex][segmentIndex][2][1] && network[section][segment][0][2] == network[sectionIndex][segmentIndex][2][2] && !(segment == segmentIndex && section == sectionIndex) && network[section][segment][1] == network[sectionIndex][segmentIndex][3]) {
 					start.push({
 						section: sectionIndex,
 						segment: segmentIndex,
@@ -164,13 +170,39 @@ class Map {
 					});
 				}
 				
+				// Backward to Forward (change from driving backwards to driving forwards) (angle must be same + 180)
+				newAngle = network[sectionIndex][segmentIndex][1];
+				newAngle = newAngle + 180;
+				if (newAngle >= 360) {newAngle -= 360}
+				if (network[section][segment][0][0] == network[sectionIndex][segmentIndex][0][0] && network[section][segment][0][1] == network[sectionIndex][segmentIndex][0][1] && network[section][segment][0][2] == network[sectionIndex][segmentIndex][0][2] && !(segment == segmentIndex && section == sectionIndex) && network[section][segment][1] == newAngle) {
+					start.push({
+						section: sectionIndex,
+						segment: segmentIndex,
+						subsegment: 1, // Stupid error with -1: In some rare cases the last index of the previous segment was equal to the 0th of the new one. 'intersection' would not work
+						direction: true
+					});
+				}
+				
 				// Backward to Forward (drive forwards)
-				if (network[section][segment][2][0] == network[sectionIndex][segmentIndex][0][0] && network[section][segment][2][1] == network[sectionIndex][segmentIndex][0][1] && network[section][segment][2][2] == network[sectionIndex][segmentIndex][0][2] && !(segment == segmentIndex && section == sectionIndex)) {
+				if (network[section][segment][2][0] == network[sectionIndex][segmentIndex][0][0] && network[section][segment][2][1] == network[sectionIndex][segmentIndex][0][1] && network[section][segment][2][2] == network[sectionIndex][segmentIndex][0][2] && !(segment == segmentIndex && section == sectionIndex) && network[section][segment][3] == network[sectionIndex][segmentIndex][1]) {
 					end.push({
 						section: sectionIndex,
 						segment: segmentIndex,
 						subsegment: 1, // I believe it gives error when last point of previous segement is the same as 0th index of current segment. So we target the first index instead.
 						direction: true
+					});
+				}
+				
+				// Backward to Backward (change from driving forwards to driving backwards) (angle must be same + 180)
+				newAngle = network[sectionIndex][segmentIndex][3];
+				newAngle = newAngle + 180;
+				if (newAngle >= 360) {newAngle -= 360}
+				if (network[section][segment][2][0] == network[sectionIndex][segmentIndex][2][0] && network[section][segment][2][1] == network[sectionIndex][segmentIndex][2][1] && network[section][segment][2][2] == network[sectionIndex][segmentIndex][2][2] && !(segment == segmentIndex && section == sectionIndex) && network[section][segment][3] == newAngle) {
+					end.push({
+						section: sectionIndex,
+						segment: segmentIndex,
+						subsegment: null, // I believe it gives error when last point of previous segement is the same as 0th index of current segment. So we target the first index instead.
+						direction: false
 					});
 				}
 			}

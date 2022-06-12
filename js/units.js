@@ -5,7 +5,7 @@ var units = [
 		name: "Diesel_Locomotive_USA",
 		type: "Diesel",
 		mesh: "Locomotive_USA_Testbed",
-		maxvelocity: 10,
+		maxvelocity: 20,
 		mass: 110,
 		traction: 50,
 	},

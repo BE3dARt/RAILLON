@@ -12,20 +12,25 @@ function angleTo2DVector (angle, precision) {
 	return [Math.round(x) / Math.pow(10, precision), Math.round(y) / Math.pow(10, precision)];
 }
 
+// Provide current position on railway network and get the destination of the next segment back
 function verifyIndex (moveDir, map, section, segment, subsegment) {
 
+	// Store position information before being modifed
 	var sectionInit = section;
 	var segmentInit = segment;
 	
+	// Store moving direction before being modifed
+	var moveDirPrev = moveDir;
+	
 	// Number of interpolation points in a segment
 	var nbPointsOfSegment = map.railnetwork[sectionInit][segmentInit].rails.curvature.getPoints().length;
-
 	// Fowards (move from 'start' to 'end')
 	if (moveDir == true) {
 		
+		// Alert when train has moved over a switch from the 'destination'-side
 		if (subsegment == 1) {
 			if (map.railnetwork[sectionInit][segmentInit].switch.object != null && map.railnetwork[sectionInit][segmentInit].switch.start.length >= 2) {
-				console.log("Change switch!");
+				// console.log("Change Switch Forwards");
 			}
 		}
 		
@@ -37,17 +42,32 @@ function verifyIndex (moveDir, map, section, segment, subsegment) {
 			
 			// At this switch the direction must actively be decided
 			if (map.railnetwork[sectionInit][segmentInit].switch.object != null && map.railnetwork[sectionInit][segmentInit].switch.start.length == 1) {
-				console.log(map.railnetwork[sectionInit][segmentInit]);
-				[section, segment] = map.railnetwork[sectionInit][segmentInit].switch.object.getDestination();
+				[section, segment, moveDir] = map.railnetwork[sectionInit][segmentInit].switch.object.getDestination();
 			} else {
 				section = map.railnetwork[sectionInit][segmentInit].switch.end[0].section;
 				segment = map.railnetwork[sectionInit][segmentInit].switch.end[0].segment;
+				moveDir = map.railnetwork[sectionInit][segmentInit].switch.end[0].direction;
+
 			}
-			subsegment = 1;
+			
+			// If direction has changed, so must the susegment
+			if (moveDirPrev != moveDir) {
+				subsegment = map.railnetwork[section][segment].rails.curvature.getPoints().length - 2;
+			} else {
+				subsegment = 1;
+			}
+			
 		}
 		
 	// Backwards (move from 'end' to 'start')
 	} else {
+		
+		// Alert when train has moved over a switch from the 'destination'-side
+		if (subsegment == map.railnetwork[section][segment].rails.curvature.getPoints().length - 2) {
+			if (map.railnetwork[sectionInit][segmentInit].switch.object != null && map.railnetwork[sectionInit][segmentInit].switch.end.length >= 2) {
+				// console.log("Change Switch Backwards");
+			}
+		}
 		
 		// Decrease subsegment index (interpolation in a segment) and simultaneously prevent it from going -1
 		if (subsegment != 0) {subsegment -= 1}
@@ -57,17 +77,24 @@ function verifyIndex (moveDir, map, section, segment, subsegment) {
 			
 			// At this switch the direction must actively be decided
 			if (map.railnetwork[sectionInit][segmentInit].switch.object != null && map.railnetwork[sectionInit][segmentInit].switch.end.length == 1) {
-				[section, segment] = map.railnetwork[sectionInit][segmentInit].switch.object.getDestination();
+				[section, segment, moveDir] = map.railnetwork[sectionInit][segmentInit].switch.object.getDestination();
 			} else {
 				section = map.railnetwork[sectionInit][segmentInit].switch.start[0].section;
 				segment = map.railnetwork[sectionInit][segmentInit].switch.start[0].segment;
+				moveDir = map.railnetwork[sectionInit][segmentInit].switch.start[0].direction;
 			}
 			
-			subsegment = map.railnetwork[section][segment].rails.curvature.getPoints().length - 2;
+			// If direction has changed, so must the susegment
+			if (moveDirPrev != moveDir) {
+				subsegment = 1;
+			} else {
+				subsegment = map.railnetwork[section][segment].rails.curvature.getPoints().length - 2;
+			}
+			
 		}
 	}
 	
-	return [section, segment, subsegment];
+	return [section, segment, subsegment, moveDir];
 }
 
 // I might regret it but I need to test it ... 

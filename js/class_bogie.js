@@ -1,6 +1,6 @@
 class bogie {
 	
-	constructor(coordinates, map, section, segment, subsegment, mesh) {
+	constructor(coordinates, map, section, segment, subsegment, direction, mesh) {
 		
 		// Initial Position
 		this.posInitial = mesh.position;
@@ -8,6 +8,9 @@ class bogie {
 		// Mesh
 		this.mesh = mesh;
 		this.mesh.position = coordinates;
+		
+		// Moving direction
+		this.direction = direction; // In contrast to former belief, bogies must be able to have their own moving directions
 		
 		// Where the bogie is in map-index-position
 		this.map = map;
@@ -17,16 +20,15 @@ class bogie {
 	}
 	
 	// Move the bogie along the spline defined in railSegment at a given speed. (Somehow increases distance between two bogies!)
-	move(deltaDisplacement, movingDirection, heading) {
+	move(deltaDisplacement, heading) {
 		
 		// Every 'CreateCubicBezier' creates a list of Vector3s. Dependent on direction, chose to get the next or the previous Vector3.
 		var ptStart = this.map.railnetwork[this.section][this.segment].rails.curvature.getPoints()[this.subsegment];
-		if (movingDirection == true) {
-			var destinationIndex = verifyIndex (movingDirection, this.map, this.section, this.segment, this.subsegment);
+		var destinationIndex = verifyIndex (this.direction, this.map, this.section, this.segment, this.subsegment);
+		
+		if (destinationIndex[3] == true) {
 			var ptDestination = this.map.railnetwork[destinationIndex[0]][destinationIndex[1]].rails.curvature.getPoints()[destinationIndex[2]];
-    
 		} else {
-			var destinationIndex = verifyIndex (movingDirection, this.map, this.section, this.segment, this.subsegment);
 			var ptDestination = this.map.railnetwork[destinationIndex[0]][destinationIndex[1]].rails.curvature.getPoints()[destinationIndex[2]];
 		}
 
@@ -48,11 +50,12 @@ class bogie {
 		}
 		
 		if (BABYLON.Vector3.Distance(this.mesh.position, ptRes) >= BABYLON.Vector3.Distance(this.mesh.position, ptDestination)) {
-			var updateIndex = verifyIndex (movingDirection, this.map, this.section, this.segment, this.subsegment);
+			var updateIndex = verifyIndex (this.direction, this.map, this.section, this.segment, this.subsegment);
 			this.section = updateIndex[0];
             this.segment = updateIndex[1];
 			this.subsegment = updateIndex[2];
-			this.move(deltaDisplacement, movingDirection, heading);
+			this.direction = updateIndex[3];
+			this.move(deltaDisplacement, heading);
 		} 
 		
 		// Set ptRes to be the new position
@@ -60,9 +63,10 @@ class bogie {
 		
 		// Check whether we overshoot the last (or the first) Vector3 entry in the segment.
 		if (dirVec.length() <= dirVecUnit.length()) {
-			var updateIndex = verifyIndex (movingDirection, this.map, this.section, this.segment, this.subsegment);
+			var updateIndex = verifyIndex (this.direction, this.map, this.section, this.segment, this.subsegment);
 			this.section = updateIndex[0];
             this.segment = updateIndex[1];
+			this.direction = updateIndex[3];
 			this.subsegment = updateIndex[2];
 		}
 	}
