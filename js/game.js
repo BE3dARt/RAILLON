@@ -76,7 +76,7 @@ var createScene = function () {
 	
 	// Display Ground
 	map = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
-	map.scaling = new BABYLON.Vector3(21, 0.1, 11);
+	map.scaling = new BABYLON.Vector3(22, 0.1, 12);
 	map.position = new BABYLON.Vector3(0, -0.08, 0);
 	map.material = mat1;
 	

@@ -3,13 +3,14 @@ class railswitch {
 		
 		// Direction (false: origin - direction1, true: origin - direction2)
 		this.direction = false;
+		this.dirModifier = false;
 		
 		// Because we can't pick bounding boxes we will just fake it
 		this.boundingBox = new BABYLON.MeshBuilder.CreateBox("box", {}, scene);
 		this.boundingBox.scaling = new BABYLON.Vector3(1.5, 0.1, 1.5);
 		this.boundingBox.position = new BABYLON.Vector3(coordinates[0], coordinates[1], coordinates[2]);
 		this.boundingBox.visibility = 0;
-		
+
 		// Origin 
 		this.origin = {
 			section: origin[0].section,
@@ -36,6 +37,9 @@ class railswitch {
 		
 		// Holds animation settings of this railway switch
 		this.animation = {
+			mesh: null,
+			posMesh: new BABYLON.Vector3(coordinates[0], coordinates[1], coordinates[2]),
+			rotMesh: 0,
 			namespace: null,
 			keyFramesFull: null,
 			keyFramesZero: null,
@@ -47,8 +51,13 @@ class railswitch {
 		// Promise of the asset loading function
 		resultPromise.then((switch3D) => {
 			
+			// Define mesh
+			this.animation.mesh = switch3D.meshes[0]
+			
 			// Set position of mesh to provided coordinates
-			switch3D.meshes[0].position = new BABYLON.Vector3(coordinates[0], coordinates[1], coordinates[2]);
+			this.animation.mesh.position = this.animation.posMesh;
+			this.animation.mesh.rotation.y = this.animation.rotMesh;
+			this.animation.mesh.scaling = new BABYLON.Vector3(1.8, 1.8, 1.8);;
 			
 			// Add keyframes because I can't export multiple animation takes from Cinema 4D. Therefore I added pose morphs but need to change its values now.
 			this.keyFramesFull = [];
@@ -63,14 +72,17 @@ class railswitch {
 			this.animation.namespace = switch3D.animationGroups[0];
 			
 			// Left
-			this.animation.namespace.targetedAnimations[0].animation.setKeys(this.keyFramesZero)
+			this.animation.namespace.targetedAnimations[0].animation.setKeys(this.keyFramesFull)
 			
 			// Right
-			this.animation.namespace.targetedAnimations[1].animation.setKeys(this.keyFramesFull)
+			this.animation.namespace.targetedAnimations[1].animation.setKeys(this.keyFramesZero)
 			
 			// Don't loop animation
 			this.animation.namespace.animatables[0].loopAnimation = false;
 			this.animation.namespace.animatables[1].loopAnimation = false;
+			
+			// Initial animation
+			this.animationRun();
 			
 		})
 	}
@@ -78,7 +90,7 @@ class railswitch {
 	// Run the animation
 	animationRun() {
 		
-		if (this.direction == false) {
+		if (this.direction == this.dirModifier) {
 			
 			// Left
 			this.animation.namespace.targetedAnimations[0].animation.setKeys(this.keyFramesFull)
@@ -139,6 +151,60 @@ class Map {
 						object: result[2] //Must be an object because it needs to be synchronised 
 					}
 				});
+				
+				// A very, very unsatisfying solution to the switch position problem (We assume that length of curvature is at least 2) IMPLEMENT PROTECION AGAINST IT
+				if (arrInput[arrInput.length - 1].switch.object != null) {
+					
+					// Placeholder to shorten code
+					var switchOrigin = arrInput[arrInput.length - 1].switch.object.origin;
+					
+					var ptOrigin;
+					var ptDirOrigin;
+					
+					// Subsegment has not yet been set: We couldn't figure out the segment length because the curvature has not yet been calculated
+					if (switchOrigin.subsegment == null) {
+						
+						// Because it was null, set origin's subsegment
+						switchOrigin.subsegment = objRailSegment.curvature.getPoints().length - 1;
+						
+						ptOrigin = objRailSegment.curvature.getPoints()[switchOrigin.subsegment];
+						ptDirOrigin = objRailSegment.curvature.getPoints()[switchOrigin.subsegment - 1];
+						
+						arrInput[arrInput.length - 1].switch.object.dirModifier = true;
+						
+						
+					} else {
+						
+						ptOrigin = objRailSegment.curvature.getPoints()[0];
+						ptDirOrigin = objRailSegment.curvature.getPoints()[1];
+						
+						arrInput[arrInput.length - 1].switch.object.dirModifier = false;
+					}
+					
+					// Angle between the two points
+					var angle = BABYLON.Angle.BetweenTwoPoints(new BABYLON.Vector2(ptDirOrigin.x, ptDirOrigin.z), new BABYLON.Vector2(ptOrigin.x, ptOrigin.z));
+					
+					// Form direction vector from 'ptDirOrigin' to 'ptOrigin' because we went 1 subsegment back before.
+					var dirVec = new BABYLON.Vector3(ptOrigin.x - ptDirOrigin.x, ptOrigin.y - ptDirOrigin.y, ptOrigin.z - ptDirOrigin.z);
+					var coefficient = 0.5 / (Math.sqrt(Math.pow(dirVec.x, 2) + Math.pow(dirVec.y, 2) + Math.pow(dirVec.z, 2)));
+					var dirVecUnit = new BABYLON.Vector3(dirVec.x * coefficient, dirVec.y * coefficient, dirVec.z * coefficient);
+					
+					// Rotate direction vector
+					var result = new BABYLON.Vector2(1, 1);
+					var vecBase = new BABYLON.Vector2(dirVecUnit.x, dirVecUnit.z);
+					vecBase.rotateToRef(Math.PI/2, result);
+					
+					// Form coordinates of resulting point
+					var ptRes = new BABYLON.Vector3(ptOrigin.x + result.x, 0, ptOrigin.z + result.y); // With offset
+					// var ptRes = ptOrigin;  // Without offset
+					
+					// Set coordinates
+					arrInput[arrInput.length - 1].switch.object.boundingBox.position = ptRes;
+					arrInput[arrInput.length - 1].switch.object.animation.posMesh = ptRes;
+					
+					// Set rotation
+					arrInput[arrInput.length - 1].switch.object.animation.rotMesh = angle.radians();
+				}
 			}
 			this.railnetwork[sectionIndex] = arrInput;
         }
