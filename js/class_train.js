@@ -18,13 +18,19 @@ class train {
 		
 		// Every significant variable for the train's MOVEMENT
 		this.movement = {
-			velocity: null, 				// Calculate with 'unit.js'
+			velocity: null, 		// Calculate with 'unit.js'
 			direction: direction,
 			status: 1, 				// 0: stop, 1: drive
 		};
 		
 		this.configuration = {
-			maxvelocity: null,
+			maxvelocity: 0,
+			power: 0,
+			mass: 0,
+			efficiency: 0,
+			tractiveEffort: 0,
+			acceleration: 0,
+			deceleration: 0
 		}
         
 		// Check if provided segment exists
@@ -203,13 +209,54 @@ class train {
 			delete this.rollingStock3DModels;
 			delete this.rollingStock3DModelsInitializedCounter;
 			
-			// Calculate max velocity for whole train based on max velocity of each rolling stock
+			// Variables to capture data of rolling stock units
 			var arrMaxVelocity = [];
+			var arrEfficiency = [];
+			var arrMass = 0;
+			var arrPower = 0;
+			
+			// Loop again over ever rolling stock unit in the current consist to grab important data 
 			for (let i = 0; i < this.composition.length; i++) {
+				
+				// Add max velocity
 				arrMaxVelocity.push(this.composition[i].configuration.maxvelocity);
+				
+				// Add Efficiency
+				if (this.composition[i].configuration.efficiency !== undefined) {
+					arrEfficiency.push(this.composition[i].configuration.efficiency);
+				}
+
+				// Add mass
+				this.configuration.mass += this.composition[i].configuration.mass;
+				
+				// Add power
+				if (this.composition[i].configuration.power !== undefined) {
+					this.configuration.power += this.composition[i].configuration.power;
+				}
 			}
+			
+			// Calculate max velocity for whole train based on max velocity of each rolling stock
 			this.configuration.maxvelocity = Math.min.apply(null, arrMaxVelocity);
 			this.movement.velocity = Math.min.apply(null, arrMaxVelocity);
+			
+			// Calulcate Efficiency
+			this.configuration.efficiency = arrEfficiency.reduce((a, b) => a + b, 0) / arrEfficiency.length;
+			
+			// Calculate friction force (F = u * m * g)
+			var frictionForce = frictionCoefficient * (this.configuration.mass * 1000) * 9.80665;
+			
+			// Calculate tractive force (F = power / speed) (http://evilgeniustech.com/idiotsGuideToRailroadPhysics/HorsepowerAndTractiveEffort/)
+			this.configuration.tractiveEffort = ((this.configuration.efficiency * this.configuration.power * 1000) / this.configuration.maxvelocity);
+			
+			// Calculate train's acceleration (a = F / m)
+			this.configuration.acceleration = ((this.configuration.tractiveEffort - frictionForce) / (this.configuration.mass * 1000)) * accelerationMultiplier;
+			
+			// Show data if debug is active
+			if (activeDebug == true) {
+				console.log("Friction: " + frictionForce)
+				console.log("Tractive Effort: " + this.configuration.tractiveEffort)
+				console.log("Acceleration: " + this.configuration.acceleration)
+			}
 			
 			// Initialisation of all units successfully finished
 			this.initialized = true;

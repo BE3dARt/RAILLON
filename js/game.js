@@ -92,7 +92,7 @@ var createScene = function () {
 	layout1 = new Map("Default", scene);
 	
 	// Create new train (Current bugs: Subsegement = 0 (both))
-	compositions.push(new train([["Diesel_Locomotive_USA", true], ["Diesel_Locomotive_USA", false], ["Diesel_Locomotive_USA", false]], layout1, 0, 2, 10, false, scene));
+	compositions.push(new train([["Diesel_Locomotive_USA", true], ["Flatcar_USA", false], ["Flatcar_USA", false]], layout1, 0, 2, 10, false, scene));
 
 	// Event on mesh-click
     scene.onPointerPick = function (evt, pickResult) {

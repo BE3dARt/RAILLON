@@ -5,18 +5,20 @@ var units = [
 		name: "Diesel_Locomotive_USA",
 		type: "Diesel",
 		mesh: "Locomotive_USA_Testbed",
-		maxvelocity: 20,
-		mass: 110,
-		traction: 50,
+		power: 3500, // in kW
+		efficiency: 0.90, // Power Transfer Efficiency
+		maxvelocity: 20, // in m/s
+		mass: 212, //in t
 	},
 	
 	// USA Wagon
 	{
 		name: "Flatcar_USA",
 		type: "Flatcar",
-		mesh: "",
-		maxvelocity: 10,
-		mass: 6,
+		mesh: "Locomotive_USA_Testbed",
+		load: 0, // in t
+		maxvelocity: 20, // in m/s
+		mass: 80, //in t
 	},
 ];
 

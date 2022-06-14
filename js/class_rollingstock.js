@@ -1,7 +1,8 @@
 class Diesel {
 	
-	constructor(traction) {
-		this.traction = traction;
+	constructor(power, efficiency) {
+		this.power = power;
+		this.efficiency = efficiency;
 	}
 	
 }
@@ -101,15 +102,23 @@ class rollingStock {
 		// Fill in unit configuration from 'units.js' and add a couple of important things.
 		var unitsTemp = units[unitNameToIndex(name)]; // Deep copy ('units.js' therefore can't be nested!)
 		
+		// Each of the following variables must be provided, else throw an error
+		
+		
 		// Dependent on the type, assign a differnt object to 'this.configuration' with special attributes and functions
 		if (unitsTemp.type == "Diesel") {
-			check(unitsTemp.traction, "traction", unitsTemp.type);
-			this.configuration = new Diesel(unitsTemp.traction);
+			check(unitsTemp.power, "power", unitsTemp.type);
+			check(unitsTemp.efficiency, "efficiency", unitsTemp.type);
+			this.configuration = new Diesel(unitsTemp.power, unitsTemp.efficiency);
+		} else if (unitsTemp.type == "Flatcar") {
+			check(unitsTemp.load, "load", unitsTemp.type);
+			this.configuration = new Flatcar(unitsTemp.load);
 		}
 		
 		// Add stuff to every configuration
 		check(unitsTemp.maxvelocity, "maxvelocity", unitsTemp.type);
 		check(unitsTemp.mass, "mass", unitsTemp.type);
+		
 		this.configuration.maxvelocity = unitsTemp.maxvelocity;
 		this.configuration.mass = unitsTemp.mass;
 		this.configuration.id = this.collectMeshIds(rollingStock3D);
