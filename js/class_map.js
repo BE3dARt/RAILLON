@@ -1,127 +1,3 @@
-class railswitch {
-	constructor(origin, destination, coordinates, scene) {
-		
-		// Direction (false: origin - direction1, true: origin - direction2)
-		this.direction = false;
-		this.dirModifier = false;
-		
-		// Because we can't pick bounding boxes we will just fake it
-		this.boundingBox = new BABYLON.MeshBuilder.CreateBox("box", {}, scene);
-		this.boundingBox.scaling = new BABYLON.Vector3(1.5, 0.1, 1.5);
-		this.boundingBox.position = new BABYLON.Vector3(coordinates[0], coordinates[1], coordinates[2]);
-		this.boundingBox.visibility = 0;
-
-		// Origin 
-		this.origin = {
-			section: origin[0].section,
-			segment: origin[0].segment,
-			subsegment: origin[0].subsegment,
-			direction: origin[0].direction,
-		};
-		
-		// Desitination 
-		this.destination = [
-			{
-				section: destination[0].section,
-				segment: destination[0].segment,
-				subsegment: destination[0].subsegment,
-				direction: destination[0].direction,
-			}, 
-			{
-				section: destination[1].section,
-				segment: destination[1].segment,
-				subsegment: destination[1].subsegment,
-				direction: destination[1].direction,
-			}
-		];
-		
-		// Holds animation settings of this railway switch
-		this.animation = {
-			mesh: null,
-			posMesh: new BABYLON.Vector3(coordinates[0], coordinates[1], coordinates[2]),
-			rotMesh: 0,
-			namespace: null,
-			keyFramesFull: null,
-			keyFramesZero: null,
-		}
-		
-		// Asynchronous asset loading function
-		const resultPromise = BABYLON.SceneLoader.ImportMeshAsync("", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/glb/", "animated_arrow.glb", scene);
-			
-		// Promise of the asset loading function
-		resultPromise.then((switch3D) => {
-			
-			// Define mesh
-			this.animation.mesh = switch3D.meshes[0]
-			
-			// Set position of mesh to provided coordinates
-			this.animation.mesh.position = this.animation.posMesh;
-			this.animation.mesh.rotation.y = this.animation.rotMesh;
-			this.animation.mesh.scaling = new BABYLON.Vector3(1.8, 1.8, 1.8);;
-			
-			// Add keyframes because I can't export multiple animation takes from Cinema 4D. Therefore I added pose morphs but need to change its values now.
-			this.keyFramesFull = [];
-			this.keyFramesFull.push({frame: 0, value: 0});
-			this.keyFramesFull.push({frame: 60, value: 1});
-			
-			this.keyFramesZero = [];
-			this.keyFramesZero.push({frame: 0, value: 1});
-			this.keyFramesZero.push({frame: 60, value: 0});
-			
-			// Write to object variable
-			this.animation.namespace = switch3D.animationGroups[0];
-			
-			// Left
-			this.animation.namespace.targetedAnimations[0].animation.setKeys(this.keyFramesFull)
-			
-			// Right
-			this.animation.namespace.targetedAnimations[1].animation.setKeys(this.keyFramesZero)
-			
-			// Don't loop animation
-			this.animation.namespace.animatables[0].loopAnimation = false;
-			this.animation.namespace.animatables[1].loopAnimation = false;
-			
-			// Initial animation
-			this.animationRun();
-			
-		})
-	}
-	
-	// Run the animation
-	animationRun() {
-		
-		if (this.direction == this.dirModifier) {
-			
-			// Left
-			this.animation.namespace.targetedAnimations[0].animation.setKeys(this.keyFramesFull)
-			
-			// Right
-			this.animation.namespace.targetedAnimations[1].animation.setKeys(this.keyFramesZero)
-			
-		} else {
-			
-			// Left
-			this.animation.namespace.targetedAnimations[0].animation.setKeys(this.keyFramesZero)
-			
-			// Right
-			this.animation.namespace.targetedAnimations[1].animation.setKeys(this.keyFramesFull)
-			
-		}
-		
-		this.animation.namespace.start()
-
-	}
-	
-	// Return the next index
-	getDestination() {
-		if (this.direction == false) {
-			return [this.destination[0].section, this.destination[0].segment, this.destination[0].direction]
-		} else {
-			return [this.destination[1].section, this.destination[1].segment, this.destination[1].direction]
-		}
-	}
-}
-
 class Map {
 	constructor(name, scene) {
         
@@ -143,20 +19,18 @@ class Map {
 				
 				arrInput.push({
 					rails: objRailSegment,
-					
-					// State the connecting sections (start: at 0th index, end: at last index)
-					switch: {
-						start: result[0], // Connections (indexes) when driving starts (Right side of 'railwayNetworkConfiguration')
-						end: result[1], // Connections (indexes) when driving ends (Left side of 'railwayNetworkConfiguration')
-						object: result[2] //Must be an object because it needs to be synchronised 
-					}
+					switch: result[2],
+					connector: {
+						toPrevious: result[0], // Points to indexes of previous segment (next segment when driving backwards)
+						toNext: result[1], // Points to indexes of next segment (previous segment when driving backwards)
+					},
 				});
 				
-				// A very, very unsatisfying solution to the switch position problem (We assume that length of curvature is at least 2) IMPLEMENT PROTECION AGAINST IT
-				if (arrInput[arrInput.length - 1].switch.object != null) {
+				// A very, very unsatisfying solution to the switch position problem
+				if (arrInput[arrInput.length - 1].switch != null) {
 					
 					// Placeholder to shorten code
-					var switchOrigin = arrInput[arrInput.length - 1].switch.object.origin;
+					var switchOrigin = arrInput[arrInput.length - 1].switch.origin;
 					
 					var ptOrigin;
 					var ptDirOrigin;
@@ -170,7 +44,7 @@ class Map {
 						ptOrigin = objRailSegment.curvature.getPoints()[switchOrigin.subsegment];
 						ptDirOrigin = objRailSegment.curvature.getPoints()[switchOrigin.subsegment - 1];
 						
-						arrInput[arrInput.length - 1].switch.object.dirModifier = true;
+						arrInput[arrInput.length - 1].switch.animation.orientation = true;
 						
 						
 					} else {
@@ -178,7 +52,7 @@ class Map {
 						ptOrigin = objRailSegment.curvature.getPoints()[0];
 						ptDirOrigin = objRailSegment.curvature.getPoints()[1];
 						
-						arrInput[arrInput.length - 1].switch.object.dirModifier = false;
+						arrInput[arrInput.length - 1].switch.animation.orientation = false;
 					}
 					
 					// Angle between the two points
@@ -199,11 +73,11 @@ class Map {
 					// var ptRes = ptOrigin;  // Without offset
 					
 					// Set coordinates
-					arrInput[arrInput.length - 1].switch.object.boundingBox.position = ptRes;
-					arrInput[arrInput.length - 1].switch.object.animation.posMesh = ptRes;
+					arrInput[arrInput.length - 1].switch.interactiveZone.position = ptRes;
+					arrInput[arrInput.length - 1].switch.mesh.posInit = ptRes;
 					
 					// Set rotation
-					arrInput[arrInput.length - 1].switch.object.animation.rotMesh = angle.radians();
+					arrInput[arrInput.length - 1].switch.mesh.rotInit = angle.radians();
 				}
 			}
 			this.railnetwork[sectionIndex] = arrInput;

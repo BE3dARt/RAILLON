@@ -26,7 +26,7 @@ function verifyIndex (moveDir, map, section, segment, subsegment) {
 	if (moveDir == true) {
 		
 		// Alert when train has moved over a switch from the 'destination'-side
-		if (subsegment == 1 && map.railnetwork[sectionInit][segmentInit].switch.object != null && map.railnetwork[sectionInit][segmentInit].switch.start.length >= 2) {
+		if (subsegment == 1 && map.railnetwork[sectionInit][segmentInit].switch != null && map.railnetwork[sectionInit][segmentInit].connector.toPrevious.length >= 2) {
 			// console.log("Change Switch Forwards");
 		}
 		
@@ -37,12 +37,12 @@ function verifyIndex (moveDir, map, section, segment, subsegment) {
 		if (subsegment == nbPointsOfSegment - 1) {
 			
 			// Check if unit drives over a switch; If yes, decide where to go
-			if (map.railnetwork[sectionInit][segmentInit].switch.object != null && map.railnetwork[sectionInit][segmentInit].switch.start.length == 1) {
-				[section, segment, moveDir] = map.railnetwork[sectionInit][segmentInit].switch.object.getDestination();
+			if (map.railnetwork[sectionInit][segmentInit].switch!= null && map.railnetwork[sectionInit][segmentInit].connector.toPrevious.length == 1) {
+				[section, segment, moveDir] = map.railnetwork[sectionInit][segmentInit].switch.getDestination();
 			} else {
-				section = map.railnetwork[sectionInit][segmentInit].switch.end[0].section;
-				segment = map.railnetwork[sectionInit][segmentInit].switch.end[0].segment;
-				moveDir = map.railnetwork[sectionInit][segmentInit].switch.end[0].direction;
+				section = map.railnetwork[sectionInit][segmentInit].connector.toNext[0].section;
+				segment = map.railnetwork[sectionInit][segmentInit].connector.toNext[0].segment;
+				moveDir = map.railnetwork[sectionInit][segmentInit].connector.toNext[0].direction;
 			}
 			
 			// If a direction change occured the subsegment must be set to start at the other end of the segment
@@ -57,7 +57,7 @@ function verifyIndex (moveDir, map, section, segment, subsegment) {
 	} else {
 		
 		// Alert when train has moved over a switch from the 'destination'-side
-		if (subsegment == nbPointsOfSegment - 2 && map.railnetwork[sectionInit][segmentInit].switch.object != null && map.railnetwork[sectionInit][segmentInit].switch.end.length >= 2) {
+		if (subsegment == nbPointsOfSegment - 2 && map.railnetwork[sectionInit][segmentInit].switch != null && map.railnetwork[sectionInit][segmentInit].connector.toNext.length >= 2) {
 			// console.log("Change Switch Backwards");
 		}
 		
@@ -68,12 +68,12 @@ function verifyIndex (moveDir, map, section, segment, subsegment) {
 		if (subsegment == 0) {
 			
 			// Check if unit drives over a switch; If yes, decide where to go
-			if (map.railnetwork[sectionInit][segmentInit].switch.object != null && map.railnetwork[sectionInit][segmentInit].switch.end.length == 1) {
-				[section, segment, moveDir] = map.railnetwork[sectionInit][segmentInit].switch.object.getDestination();
+			if (map.railnetwork[sectionInit][segmentInit].switch != null && map.railnetwork[sectionInit][segmentInit].connector.toNext.length == 1) {
+				[section, segment, moveDir] = map.railnetwork[sectionInit][segmentInit].switch.getDestination();
 			} else {
-				section = map.railnetwork[sectionInit][segmentInit].switch.start[0].section;
-				segment = map.railnetwork[sectionInit][segmentInit].switch.start[0].segment;
-				moveDir = map.railnetwork[sectionInit][segmentInit].switch.start[0].direction;
+				section = map.railnetwork[sectionInit][segmentInit].connector.toPrevious[0].section;
+				segment = map.railnetwork[sectionInit][segmentInit].connector.toPrevious[0].segment;
+				moveDir = map.railnetwork[sectionInit][segmentInit].connector.toPrevious[0].direction;
 			}
 			
 			// If a direction change occured the subsegment must be set to start at the other end of the segment
@@ -188,7 +188,7 @@ function railwayNetworkNameToIndex (match) {
 
 function switchMeshToIndex (match) {
 	for (let i = 0; i < switches.length; i++) {
-		if (switches[i].boundingBox.uniqueId == match) {
+		if (switches[i].interactiveZone.uniqueId == match) {
 			return i;
 		}
 	}
