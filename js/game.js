@@ -104,7 +104,15 @@ var createScene = function () {
 				// Rolling Stock Units
 				var index = idToIndex(compositions, pickResult.pickedMesh.uniqueId);
 				if (index != null) {
-					console.log(compositions[index[0]].composition[index[1]]) // Return definition of before clicked rolling stock unit
+					
+					// Make train decelerate with a left-click
+					if (compositions[index[0]].movement.status == 3) {
+						compositions[index[0]].movement.status = 2;
+					} else if (compositions[index[0]].movement.status == 2 || compositions[index[0]].movement.status == 0) {
+						compositions[index[0]].movement.status = 3;
+					}
+					
+					// console.log(compositions[index[0]].composition[index[1]]) // Return definition of before clicked rolling stock unit
 					return;
 				}
 				

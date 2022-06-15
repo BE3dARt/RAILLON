@@ -18,7 +18,7 @@ var units = [
 		mesh: "Locomotive_USA_Testbed",
 		load: 0, // in t
 		maxvelocity: 20, // in m/s
-		mass: 80, //in t
+		mass: 200, //in t
 	},
 ];
 

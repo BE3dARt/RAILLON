@@ -20,7 +20,7 @@ class train {
 		this.movement = {
 			velocity: null, 		// Calculate with 'unit.js'
 			direction: direction,
-			status: 1, 				// 0: stop, 1: drive
+			status: 3, 				// 0: stop, 1: drive, 2: decelerate, 3: accelerate
 		};
 		
 		this.configuration = {
@@ -237,7 +237,6 @@ class train {
 			
 			// Calculate max velocity for whole train based on max velocity of each rolling stock
 			this.configuration.maxvelocity = Math.min.apply(null, arrMaxVelocity);
-			this.movement.velocity = Math.min.apply(null, arrMaxVelocity);
 			
 			// Calulcate Efficiency
 			this.configuration.efficiency = arrEfficiency.reduce((a, b) => a + b, 0) / arrEfficiency.length;
@@ -251,6 +250,9 @@ class train {
 			// Calculate train's acceleration (a = F / m)
 			this.configuration.acceleration = ((this.configuration.tractiveEffort - frictionForce) / (this.configuration.mass * 1000)) * accelerationMultiplier;
 			
+			// Calculate train's Deceleration
+			this.configuration.deceleration = this.configuration.acceleration * -1;
+			
 			// Show data if debug is active
 			if (activeDebug == true) {
 				console.log("Friction: " + frictionForce)
@@ -260,15 +262,18 @@ class train {
 			
 			// Initialisation of all units successfully finished
 			this.initialized = true;
-		}
-			
-		if (this.movement.status == 1) {
+		} else {
 			this.move();
 		}
 	}
 	
 	// Move train as a whole
 	move() {
+		
+		// Return if locomotive should not be moved at any circumstances
+		if (this.movement.status == 0) {
+			return
+		}
 		
 		// Debug distance between back bogie of first rolling stock unit and front bogie of second rolling stock unit.
 		if (activeDebug == true) {
@@ -292,6 +297,28 @@ class train {
 			
 			// Case 3: Default case where engine.getDeltaTime() is being adjusted by 'blurTimeElapsed', which is the time this window spent without focus.
 			frametime = engine.getDeltaTime() - blurTimeElapsed;
+		}
+		
+		// Decelerate train (dv = a * dt)
+		if (this.movement.status == 2) {
+			this.movement.velocity += this.configuration.deceleration * (frametime / 1000);
+		}
+		
+		// Accelerate train (dv = (a *-1) * dt)
+		if (this.movement.status == 3) {
+			this.movement.velocity += this.configuration.acceleration * (frametime / 1000);
+		}
+		
+		// Before moving on, check whether the train would go over its max velocity
+		if (this.movement.velocity > this.configuration.maxvelocity) {
+			this.movement.velocity = this.configuration.maxvelocity;
+		}
+		
+		// Before moving on, check whether the train has already stopped
+		if (this.movement.velocity < 0) {
+			this.movement.velocity = 0;
+			this.movement.status = 0;
+			return;
 		}
 		
 		// Set displacement in relation to speed and render time so that speed is always the same no matter the fps.
