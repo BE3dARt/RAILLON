@@ -7,18 +7,18 @@ var units = [
 		mesh: "Locomotive_USA_Testbed",
 		power: 3500, // in kW
 		efficiency: 0.90, // Power Transfer Efficiency
-		maxvelocity: 20, // in m/s
+		maxvelocity: 72, // in km/h
 		mass: 212, //in t
 	},
 	
-	// USA Wagon
+	// Europe Container Wagon
 	{
-		name: "Flatcar_USA",
-		type: "Flatcar",
+		name: "Container_Europe", // Loosly based on DB Sgns 691 (Can hold up to 60' of containers, e.g. 3 x 20' or 1 x 40' + 1 x 20')
+		type: "Container",
 		mesh: "Locomotive_USA_Testbed",
 		load: 0, // in t
-		maxvelocity: 20, // in m/s
-		mass: 200, //in t
+		maxvelocity: 120, // in km/h
+		mass: 20, //in t
 	},
 ];
 

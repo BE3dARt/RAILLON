@@ -49,8 +49,8 @@ class Covered {
 
 class Container {
 	
-	constructor() {
-		
+	constructor(load) {
+		this.load = load;
 	}
 	
 }
@@ -102,24 +102,20 @@ class rollingStock {
 		// Fill in unit configuration from 'units.js' and add a couple of important things.
 		var unitsTemp = units[unitNameToIndex(name)]; // Deep copy ('units.js' therefore can't be nested!)
 		
-		// Each of the following variables must be provided, else throw an error
-		
-		
 		// Dependent on the type, assign a differnt object to 'this.configuration' with special attributes and functions
 		if (unitsTemp.type == "Diesel") {
 			check(unitsTemp.power, "power", unitsTemp.type);
 			check(unitsTemp.efficiency, "efficiency", unitsTemp.type);
 			this.configuration = new Diesel(unitsTemp.power, unitsTemp.efficiency);
-		} else if (unitsTemp.type == "Flatcar") {
+		} else if (unitsTemp.type == "Container") {
 			check(unitsTemp.load, "load", unitsTemp.type);
-			this.configuration = new Flatcar(unitsTemp.load);
+			this.configuration = new Container(unitsTemp.load);
 		}
 		
-		// Add stuff to every configuration
+		// Add stuff to every configuration (with a check)
 		check(unitsTemp.maxvelocity, "maxvelocity", unitsTemp.type);
 		check(unitsTemp.mass, "mass", unitsTemp.type);
-		
-		this.configuration.maxvelocity = unitsTemp.maxvelocity;
+		this.configuration.maxvelocity = unitsTemp.maxvelocity / 3.6; // Convert km/h to m/s
 		this.configuration.mass = unitsTemp.mass;
 		this.configuration.id = this.collectMeshIds(rollingStock3D);
 		
@@ -129,7 +125,6 @@ class rollingStock {
 		
 		// Every significant variable for the unit's MOVEMENT
 		this.movement = {
-			velocity: null,	// Not defined
 			direction: direction,
 			facing: facing,
 		};

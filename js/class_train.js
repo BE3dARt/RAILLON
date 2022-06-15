@@ -18,9 +18,12 @@ class train {
 		
 		// Every significant variable for the train's MOVEMENT
 		this.movement = {
-			velocity: null, 		// Calculate with 'unit.js'
+			velocity: null, // Calculate with 'unit.js'
 			direction: direction,
-			status: 3, 				// 0: stop, 1: drive, 2: decelerate, 3: accelerate
+			status: { // 0: stop, 1: drive, 2: decelerate, 3: accelerate
+				current: 3,
+				previous: 0,
+			}			
 		};
 		
 		this.configuration = {
@@ -271,7 +274,7 @@ class train {
 	move() {
 		
 		// Return if locomotive should not be moved at any circumstances
-		if (this.movement.status == 0) {
+		if (this.movement.status.current == 0) {
 			return
 		}
 		
@@ -300,12 +303,12 @@ class train {
 		}
 		
 		// Decelerate train (dv = a * dt)
-		if (this.movement.status == 2) {
+		if (this.movement.status.current == 2) {
 			this.movement.velocity += this.configuration.deceleration * (frametime / 1000);
 		}
 		
 		// Accelerate train (dv = (a *-1) * dt)
-		if (this.movement.status == 3) {
+		if (this.movement.status.current == 3) {
 			this.movement.velocity += this.configuration.acceleration * (frametime / 1000);
 		}
 		
@@ -317,7 +320,7 @@ class train {
 		// Before moving on, check whether the train has already stopped
 		if (this.movement.velocity < 0) {
 			this.movement.velocity = 0;
-			this.movement.status = 0;
+			this.movement.status.current = 0;
 			return;
 		}
 		

@@ -1,9 +1,16 @@
-var canvas = document.getElementById("renderCanvas");
+// Do NOT change these global variables
+var compositions = []; // Will hold all train compositions
+var switches = []; // Holds all switches (Only defined here in order to find out which one has been clicked so it can be changed.)
+var blurTime = 0;
+var blurTimeElapsed = 0;
+var renderStatus = true;
+var previousFrameTime = 15;
 
-// Set up event handler to produce text for the window focus event
+// Event Handler when window gets focus back
 window.addEventListener("focus", function(event) { 
 	blurTimeElapsed = Date.now() - blurTime;
 	
+	// Debug information
 	if (activeDebug == true) {
 		console.log("Elapsed Time since last focus: " + blurTimeElapsed); 
 		console.log("Render Time: " + engine.getDeltaTime())
@@ -11,7 +18,7 @@ window.addEventListener("focus", function(event) {
 	
 	// Let compositions move again
 	for (let i = 0; i < compositions.length; i++) {
-		compositions[i].movement.status = 1;
+		compositions[i].movement.status.current = compositions[i].movement.status.previous;
 	}
 	
 	// Resume Rendering
@@ -19,13 +26,14 @@ window.addEventListener("focus", function(event) {
 	
 }, false);
 
-// Example of the blur event as opposed to focus
+// Event Handler when window looses focus
 window.addEventListener("blur", function(event) { 
 	blurTime = Date.now();
 	
 	// Stop compositions from moving
 	for (let i = 0; i < compositions.length; i++) {
-		compositions[i].movement.status = 0;
+		compositions[i].movement.status.previous = compositions[i].movement.status.current;
+		compositions[i].movement.status.current = 0;
 	}
 	
 	// Stop Rendering
@@ -33,6 +41,7 @@ window.addEventListener("blur", function(event) {
 	
 }, false);
 
+var canvas = document.getElementById("renderCanvas");
 var startRenderLoop = function (engine, canvas) {
 	engine.runRenderLoop(function () {
 		if (sceneToRender && sceneToRender.activeCamera) {
@@ -42,7 +51,6 @@ var startRenderLoop = function (engine, canvas) {
 		}
 	});
 }
-
 var engine = null;
 var scene = null;
 var sceneToRender = null;
@@ -92,7 +100,7 @@ var createScene = function () {
 	layout1 = new Map("Default", scene);
 	
 	// Create new train (Current bugs: Subsegement = 0 (both))
-	compositions.push(new train([["Diesel_Locomotive_USA", true], ["Flatcar_USA", false], ["Flatcar_USA", false]], layout1, 0, 2, 10, false, scene));
+	compositions.push(new train([["Diesel_Locomotive_USA", true], ["Container_Europe", false], ["Container_Europe", false]], layout1, 0, 2, 10, false, scene));
 
 	// Event on mesh-click
     scene.onPointerPick = function (evt, pickResult) {
@@ -106,10 +114,10 @@ var createScene = function () {
 				if (index != null) {
 					
 					// Make train decelerate with a left-click
-					if (compositions[index[0]].movement.status == 3) {
-						compositions[index[0]].movement.status = 2;
-					} else if (compositions[index[0]].movement.status == 2 || compositions[index[0]].movement.status == 0) {
-						compositions[index[0]].movement.status = 3;
+					if (compositions[index[0]].movement.status.current == 3) {
+						compositions[index[0]].movement.status.current = 2;
+					} else if (compositions[index[0]].movement.status.current == 2 || compositions[index[0]].movement.status.current == 0) {
+						compositions[index[0]].movement.status.current = 3;
 					}
 					
 					// console.log(compositions[index[0]].composition[index[1]]) // Return definition of before clicked rolling stock unit
