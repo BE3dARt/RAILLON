@@ -266,7 +266,7 @@ class train {
 			// Initialisation of all units successfully finished
 			this.initialized = true;
 		} else {
-			this.move();
+			//this.move();
 		}
 	}
 	

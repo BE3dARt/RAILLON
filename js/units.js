@@ -4,7 +4,7 @@ var units = [
 	{
 		name: "Diesel_Locomotive_USA",
 		type: "Diesel",
-		mesh: "Locomotive_USA_Testbed",
+		mesh: "Locomotive_USA_ColorCode",
 		power: 3500, // in kW
 		efficiency: 0.90, // Power Transfer Efficiency
 		maxvelocity: 72, // in km/h
@@ -15,7 +15,7 @@ var units = [
 	{
 		name: "Container_Europe", // Loosly based on DB Sgns 691 (Can hold up to 60' of containers, e.g. 3 x 20' or 1 x 40' + 1 x 20')
 		type: "Container",
-		mesh: "Locomotive_USA_Testbed",
+		mesh: "Container_Europe",
 		load: 0, // in t
 		maxvelocity: 120, // in km/h
 		mass: 20, //in t
