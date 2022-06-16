@@ -236,9 +236,9 @@ class rollingStock {
 		
 		// Set direction (Currently only turns around hull; meaning bogies cannot be different)
 		if (this.movement.facing == true) {
-			this.hull.mesh.rotation.y = (angle.radians() *-1) + (Math.PI * (5/2));
+			this.hull.mesh.rotation.y = (angle.radians() *-1) + Math.PI;
 		} else {
-			this.hull.mesh.rotation.y = (angle.radians() *-1) + (Math.PI * (3/2));
+			this.hull.mesh.rotation.y = (angle.radians() *-1) + Math.PI * 2;
 		}
 		
 		// Set new position

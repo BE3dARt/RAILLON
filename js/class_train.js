@@ -172,7 +172,7 @@ class train {
 					} else {
 						first_coupler = new BABYLON.Vector3(this.rollingStock3DModels[i-1][2][1].getBoundingInfo().boundingBox.maximumWorld.x * -1 + couplerLockDistance, 0, 0);
 					}
-					
+
 					// Position back bogie of first locomotive
 					var first_bogie = this.composition[i-1].bogies.back.posInitial;
 					
@@ -185,7 +185,7 @@ class train {
 					}
 					
 					// Position front bogie of second locomotive
-					var second_bogie = this.composition[i-1].bogies.front.posInitial;
+					var second_bogie = this.rollingStock3DModels[i][1][0].position;
 					
 					// Distance to the first bogie of the next locomotive
 					var distanceToNext = BABYLON.Vector3.Distance(first_coupler, first_bogie) + BABYLON.Vector3.Distance(second_coupler, second_bogie);
@@ -266,7 +266,7 @@ class train {
 			// Initialisation of all units successfully finished
 			this.initialized = true;
 		} else {
-			//this.move();
+			this.move();
 		}
 	}
 	

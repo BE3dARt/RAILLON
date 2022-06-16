@@ -42,7 +42,7 @@ class bogie {
 		var angle = BABYLON.Angle.BetweenTwoPoints(new BABYLON.Vector2(this.mesh.position.x, this.mesh.position.z), new BABYLON.Vector2(ptRes.x, ptRes.z));
 		
 		// Set rotation (NEEDS FIX: Is not smooth! Must find another way!)
-		this.mesh.rotation.y = (angle.radians() *-1) + Math.PI* 3/2;
+		this.mesh.rotation.y = (angle.radians() *-1) + Math.PI*2;
 		
 		// If locomotive is facing backwards adjust the rotation
 		if (heading == false) {
