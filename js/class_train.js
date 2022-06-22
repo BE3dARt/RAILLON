@@ -59,7 +59,7 @@ class train {
 			// Asynchronous asset loading function
 			const resultPromise = BABYLON.SceneLoader.ImportMeshAsync("", "https://raw.githubusercontent.com/BE3dARt/RAILBLAZER/main/assets/glb/", meshName + ".glb", scene);
 			
-			// Promise of the asset loading function
+			// Promise of the asset loading function (PROBLEM: When loading from server, order is all over the place!)
 			resultPromise.then((load3D) => {
 				
 				// Declare 3D-objects
@@ -70,6 +70,11 @@ class train {
 				// Assign 3D-objects to correct group (Forward-Heading)
 				if (this.compositionInitial[i][1] == true) {
 					for (let i = 0; i < load3D.meshes.length; i++) {
+						
+						/*
+						// Make invisible until placed later
+						load3D.meshes[i].visibility = 0;
+						*/
                     
 						//Formalities
 						load3D.meshes[i].rotationQuaternion = null;
@@ -95,6 +100,11 @@ class train {
 				// Assign 3D-objects to correct group (Backward-Heading)
 				if (this.compositionInitial[i][1] == false) {
 					for (let i = load3D.meshes.length-1; i >= 0; i--) {
+						
+						/*
+						// Make invisible until placed later
+						load3D.meshes[i].visibility = 0;
+						*/
                     
 						//Formalities
 						load3D.meshes[i].rotationQuaternion = null;
@@ -130,8 +140,8 @@ class train {
 					couplers_3D[0].position = couplers_3D[1].position;
 					couplers_3D[1].position = posTemporary;
 				}
-				
-				this.rollingStock3DModels.push([hull_3D, bogies_3D, couplers_3D]);
+
+				this.rollingStock3DModels[i] = [hull_3D, bogies_3D, couplers_3D]; // Don't push, set it to specific index!
 				this.rollingStock3DModelsInitializedCounter += 1;
 			})
 		}
@@ -166,23 +176,13 @@ class train {
 					var subsegment_previous = this.composition[this.composition.length-1].bogies.back.subsegment;
 	
 					// Furthest point away of center first locomotive
-					var first_coupler;
-					if (this.compositionInitial[i-1][1] == true) {
-						first_coupler = new BABYLON.Vector3(this.rollingStock3DModels[i-1][2][1].getBoundingInfo().boundingBox.minimumWorld.x + couplerLockDistance, 0, 0);
-					} else {
-						first_coupler = new BABYLON.Vector3(this.rollingStock3DModels[i-1][2][1].getBoundingInfo().boundingBox.maximumWorld.x * -1 + couplerLockDistance, 0, 0);
-					}
+					var first_coupler = new BABYLON.Vector3((this.rollingStock3DModels[i-1][2][1].position.x - this.rollingStock3DModels[i-1][2][1].getBoundingInfo().boundingBox.maximum.x) + couplerLockDistance, 0, 0);
 
 					// Position back bogie of first locomotive
 					var first_bogie = this.composition[i-1].bogies.back.posInitial;
 					
 					// Furthest point away of center second locomotive (Maximum because mirrored)
-					var second_coupler;
-					if (this.compositionInitial[i][1] == true) {
-						second_coupler = new BABYLON.Vector3(this.rollingStock3DModels[i][2][0].getBoundingInfo().boundingBox.maximumWorld.x - couplerLockDistance, 0, 0);
-					} else {
-						second_coupler = new BABYLON.Vector3(this.rollingStock3DModels[i][2][0].getBoundingInfo().boundingBox.minimumWorld.x * -1 - couplerLockDistance, 0, 0);
-					}
+					var second_coupler = new BABYLON.Vector3((this.rollingStock3DModels[i][2][0].position.x + this.rollingStock3DModels[i][2][0].getBoundingInfo().boundingBox.maximum.x) - couplerLockDistance, 0, 0);
 					
 					// Position front bogie of second locomotive
 					var second_bogie = this.rollingStock3DModels[i][1][0].position;
@@ -195,12 +195,22 @@ class train {
 						console.log(distanceToNext);
 					}
 					
-					// NEXT BUILD FUNCTION TO GET DISTANCE BETWEEN UNITS, now for debug set to 0.65
+					// Calculate position of next bogie
 					var result = getPosNextBogie(coordinatesReferenceBogie_previous, layout_previous, section_previous, segment_previous, subsegment_previous, this.movement.direction, distanceToNext, scene);
 					
+					// Add rolling stock unit to consist
 					this.composition.push(new rollingStock(result[0], this.map, result[1], result[2], result[3], this.movement.direction, this.compositionInitial[this.composition.length][1], this.rollingStock3DModels[i], this.compositionInitial[i][0], scene))
-				
+					
 				}
+				
+				/*
+				// Make meshes visible again
+				for (let meshType = 0; meshType < this.rollingStock3DModels[i].length; meshType++) {
+					for (let meshNumer = 0; meshNumer < this.rollingStock3DModels[i][meshType].length; meshNumer++) {
+						this.rollingStock3DModels[i][meshType][meshNumer].visibility = 1;
+					}
+				}
+				*/
 			}
 			
 			// delete unused variables
